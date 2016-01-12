@@ -104,3 +104,32 @@ function assets() {
   wp_enqueue_script('sage/js', Assets\asset_path('scripts/main.js'), ['jquery'], null, true);
 }
 add_action('wp_enqueue_scripts', __NAMESPACE__ . '\\assets', 100);
+
+/**
+ * load map libraries using cdn
+ */
+function leafletScripts() {
+    wp_enqueue_script(
+        'LeafletCore',
+        '//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js',
+        array( 'sage/js' ),
+        null,
+        false
+    );
+    wp_enqueue_script(
+        'LeafletDraw',
+        '//cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js',
+        array( 'LeafletCore' ),
+        null,
+        false
+    );
+    wp_enqueue_script(
+        'MapBox',
+        '//api.mapbox.com/mapbox.js/v2.2.3/mapbox.js',
+        array( 'LeafletDraw' ),
+        null,
+        false
+    );
+}
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\leafletScripts',100);
+

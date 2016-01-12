@@ -1,35 +1,37 @@
 // ## Globals
-var argv         = require('minimist')(process.argv.slice(2));
-var autoprefixer = require('gulp-autoprefixer');
-var browserSync  = require('browser-sync').create();
-var changed      = require('gulp-changed');
-var concat       = require('gulp-concat');
-var flatten      = require('gulp-flatten');
-var gulp         = require('gulp');
-var gulpif       = require('gulp-if');
-var imagemin     = require('gulp-imagemin');
-var jshint       = require('gulp-jshint');
-var lazypipe     = require('lazypipe');
-var less         = require('gulp-less');
-var merge        = require('merge-stream');
-var minifyCss    = require('gulp-minify-css');
-var plumber      = require('gulp-plumber');
-var rev          = require('gulp-rev');
-var runSequence  = require('run-sequence');
-var sass         = require('gulp-sass');
-var sourcemaps   = require('gulp-sourcemaps');
-var uglify       = require('gulp-uglify');
+var argv         = require('minimist')(process.argv.slice(2));  // creates an object from command line arguments
+var autoprefixer = require('gulp-autoprefixer');                // Parse CSS and add vendor prefixes to rules
+var browserSync  = require('browser-sync').create();            // Keep multiple browsers & devices in sync when building websites.
+var changed      = require('gulp-changed');                     // detect whether files in the stream changed
+var concat       = require('gulp-concat');                      // concat files
+var flatten      = require('gulp-flatten');                     // remove or replace relative path for files (so make nested files into flat folder)
+var gulp         = require('gulp');                             // gulp with api for tasks
+var gulpif       = require('gulp-if');                          // conditionally control the flow of vinyl objects
+var imagemin     = require('gulp-imagemin');                    // image minifier
+var jshint       = require('gulp-jshint');                      // js linter/hinter
+var lazypipe     = require('lazypipe');                         // provides the .pipe() method for creating pipelines in parts
+var less         = require('gulp-less');                        // less compiler
+var merge        = require('merge-stream');                     // simple way to create/merge streams
+var minifyCss    = require('gulp-minify-css');                  // css minifier
+var plumber      = require('gulp-plumber');                     // allows piped flowes to continue even if one part errors
+var rev          = require('gulp-rev');                         // appends a unique # to an asset (cache breaking)
+var runSequence  = require('run-sequence');                     // Runs a sequence of gulp tasks in the specified order (i.e. not in parrallel)
+var sass         = require('gulp-sass');                        // sass compiler
+var sourcemaps   = require('gulp-sourcemaps');                  // create source maps
+var uglify       = require('gulp-uglify');                      // minify JS
 
 // See https://github.com/austinpray/asset-builder
-var manifest = require('asset-builder')('./assets/manifest.json');
+var manifest = require('asset-builder')('./assets/manifest.json');  // reads manifest file and gives you a object of file objects and globs
 
-// `path` - Paths to base asset directories. With trailing slashes.
+// `path` - Paths (js object) to base asset directories. With trailing slashes.
 // - `path.source` - Path to the source files. Default: `assets/`
 // - `path.dist` - Path to the build directory. Default: `dist/`
 var path = manifest.paths;
 
-// `config` - Store arbitrary configuration values here.
+
+// `config` - Store arbitrary configuration values here.  -- nothing important by default
 var config = manifest.config || {};
+
 
 // `globs` - These ultimately end up in their respective `gulp.src`.
 // - `globs.js` - Array of asset-builder JS dependency objects. Example:
@@ -45,10 +47,12 @@ var config = manifest.config || {};
 // - `globs.bower` - Array of all the main Bower files.
 var globs = manifest.globs;
 
-// `project` - paths to first-party assets.
+
+// `project` - paths to first-party assets. // the stuff you work with i.e. everything in manifest but not the font files or the bootstrap stuff
 // - `project.js` - Array of first-party JS assets.
 // - `project.css` - Array of first-party CSS assets.
 var project = manifest.getProjectGlobs();
+
 
 // CLI options
 var enabled = {
@@ -67,16 +71,14 @@ var enabled = {
 // Path to the compiled assets manifest in the dist directory
 var revManifest = path.dist + 'assets.json';
 
+
+
+
 // ## Reusable Pipelines
 // See https://github.com/OverZealous/lazypipe
 
 // ### CSS processing pipeline
-// Example
-// ```
-// gulp.src(cssFiles)
-//   .pipe(cssTasks('main.css')
-//   .pipe(gulp.dest(path.dist + 'styles'))
-// ```
+
 var cssTasks = function(filename) {
   return lazypipe()
     .pipe(function() {
@@ -119,12 +121,6 @@ var cssTasks = function(filename) {
 };
 
 // ### JS processing pipeline
-// Example
-// ```
-// gulp.src(jsFiles)
-//   .pipe(jsTasks('main.js')
-//   .pipe(gulp.dest(path.dist + 'scripts'))
-// ```
 var jsTasks = function(filename) {
   return lazypipe()
     .pipe(function() {
@@ -146,6 +142,7 @@ var jsTasks = function(filename) {
     })();
 };
 
+
 // ### Write to rev manifest
 // If there are any revved files then write them to the rev manifest.
 // See https://github.com/sindresorhus/gulp-rev
@@ -159,6 +156,7 @@ var writeToManifest = function(directory) {
     })
     .pipe(gulp.dest, path.dist)();
 };
+
 
 // ## Gulp tasks
 // Run `gulp -T` for a task summary
