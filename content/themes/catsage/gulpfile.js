@@ -19,6 +19,9 @@ var runSequence  = require('run-sequence');                     // Runs a sequen
 var sass         = require('gulp-sass');                        // sass compiler
 var sourcemaps   = require('gulp-sourcemaps');                  // create source maps
 var uglify       = require('gulp-uglify');                      // minify JS
+var browserify   = require('browserify');                        // common js module loader
+var source       = require('vinyl-source-stream');
+var buffer       = require('vinyl-buffer');
 
 // See https://github.com/austinpray/asset-builder
 var manifest = require('asset-builder')('./assets/manifest.json');  // reads manifest file and gives you a object of file objects and globs
@@ -52,7 +55,6 @@ var globs = manifest.globs;
 // - `project.js` - Array of first-party JS assets.
 // - `project.css` - Array of first-party CSS assets.
 var project = manifest.getProjectGlobs();
-
 
 // CLI options
 var enabled = {
@@ -197,6 +199,22 @@ gulp.task('scripts', ['jshint'], function() {
     .pipe(writeToManifest('scripts'));
 });
 
+gulp.task('browserify', function(){
+    // deal with main.js common.js module dependencies here ** do not put them in the manifest!!
+  var b = browserify({
+    entries: 'assets/scripts/main.js', // we're hardcoded here...
+    debug  : true
+  });
+
+  b.bundle()
+    .pipe(source('main.es5.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps:true}))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('assets/scripts/'));
+});
+
+
 // ### Fonts
 // `gulp fonts` - Grabs all the fonts and outputs them in a flattened directory
 // structure. See: https://github.com/armed/gulp-flatten
@@ -225,7 +243,7 @@ gulp.task('images', function() {
 gulp.task('jshint', function() {
   return gulp.src([
     'bower.json', 'gulpfile.js'
-  ].concat(project.js))
+    ])
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(gulpif(enabled.failJSHint, jshint.reporter('fail')));
@@ -262,6 +280,7 @@ gulp.task('watch', function() {
 // Generally you should be running `gulp` instead of `gulp build`.
 gulp.task('build', function(callback) {
   runSequence('styles',
+              'browserify',
               'scripts',
               ['fonts', 'images'],
               callback);

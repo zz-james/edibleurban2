@@ -2,7 +2,7 @@
   "dependencies": {
     "main.js": {
       "files": [
-        "scripts/main.js"
+        "scripts/main.es5.js"
       ],
       "main": true
     },
