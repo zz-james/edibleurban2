@@ -19,9 +19,10 @@ var runSequence  = require('run-sequence');                     // Runs a sequen
 var sass         = require('gulp-sass');                        // sass compiler
 var sourcemaps   = require('gulp-sourcemaps');                  // create source maps
 var uglify       = require('gulp-uglify');                      // minify JS
-var browserify   = require('browserify');                        // common js module loader
+var browserify   = require('browserify');                       // common js module loader
 var source       = require('vinyl-source-stream');
 var buffer       = require('vinyl-buffer');
+var babelify     = require('babelify');                             // es6 transpiler
 
 // See https://github.com/austinpray/asset-builder
 var manifest = require('asset-builder')('./assets/manifest.json');  // reads manifest file and gives you a object of file objects and globs
@@ -204,9 +205,12 @@ gulp.task('browserify', function(){
   var b = browserify({
     entries: 'assets/scripts/main.js', // we're hardcoded here...
     debug  : true
-  });
+  }).transform(babelify.configure({
+        ignore: /(bower_components)|(node_modules)/
+  }));
 
   b.bundle()
+    .on("error", function (err) { console.log("Error : " + err.message); })
     .pipe(source('main.es5.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps:true}))
