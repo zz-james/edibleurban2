@@ -1,1 +1,1 @@
-Here is the map
+<div id="map" style="height: 512px"></div>

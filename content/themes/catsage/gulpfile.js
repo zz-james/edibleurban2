@@ -200,23 +200,26 @@ gulp.task('scripts', ['jshint'], function() {
     .pipe(writeToManifest('scripts'));
 });
 
-gulp.task('browserify', function(){
-    // deal with main.js common.js module dependencies here ** do not put them in the manifest!!
-  var b = browserify({
-    entries: 'assets/scripts/main.js', // we're hardcoded here...
-    debug  : true
-  }).transform(babelify.configure({
-        ignore: /(bower_components)|(node_modules)/
-  }));
+// gulp.task('browserify', function(){
+//     // deal with main.js common.js module dependencies here ** do not put them in the manifest!!
+//   var b = browserify({
+//     entries: 'assets/scripts/main.js', // we're hardcoded here...
+//     debug  : true
+//   }).transform(babelify.configure({
+//         presets : ["es2015"],
+//         ignore  : /(bower_components)|(node_modules)/
+//   }));
 
-  b.bundle()
-    .on("error", function (err) { console.log("Error : " + err.message); })
-    .pipe(source('main.es5.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps:true}))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('assets/scripts/'));
-});
+//   console.log("------------- now we're in es5 -------------");
+
+//   b.bundle()
+//     .on("error", function (err) { console.log("Error : " + err.message); })
+//     .pipe(source('main.es5.js'))
+//     .pipe(buffer())
+//     .pipe(sourcemaps.init({loadMaps:true}))
+//     .pipe(sourcemaps.write('./'))
+//     .pipe(gulp.dest('assets/scripts/'));
+// });
 
 
 // ### Fonts
@@ -282,9 +285,8 @@ gulp.task('watch', function() {
 // ### Build
 // `gulp build` - Run all the build tasks but don't clean up beforehand.
 // Generally you should be running `gulp` instead of `gulp build`.
-gulp.task('build', function(callback) {
+gulp.task('build', /*['browserify'],*/ function(callback) {
   runSequence('styles',
-              'browserify',
               'scripts',
               ['fonts', 'images'],
               callback);

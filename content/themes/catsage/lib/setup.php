@@ -95,13 +95,22 @@ function display_sidebar() {
  * Theme assets
  */
 function assets() {
+  wp_enqueue_style('leaflet', 'http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css', false, null);
+  wp_enqueue_style('leaflet-draw', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css', false, null);
+  wp_enqueue_style('mapbox', 'https://api.mapbox.com/mapbox.js/v2.2.3/mapbox.css', false, null);
   wp_enqueue_style('sage/css', Assets\asset_path('styles/main.css'), false, null);
 
   if (is_single() && comments_open() && get_option('thread_comments')) {
     wp_enqueue_script('comment-reply');
   }
+  // wp_enqueue_script(   // to do --- npm install and browsefify 
+  //    'redux',
+  //    '//cdnjs.cloudflare.com/ajax/libs/redux/3.0.4/redux.js',
+  //    array( 'jquery' ),
+  //    null,
+  //    false
+  // );
 
-  wp_enqueue_script('sage/js', Assets\asset_path('scripts/main.js'), ['jquery'], null, true);
 }
 add_action('wp_enqueue_scripts', __NAMESPACE__ . '\\assets', 100);
 
@@ -112,23 +121,30 @@ function leafletScripts() {
     wp_enqueue_script(
         'LeafletCore',
         '//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js',
-        array( 'sage/js' ),
+        array( 'jquery' ),
         null,
-        false
-    );
-    wp_enqueue_script(
-        'LeafletDraw',
-        '//cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js',
-        array( 'LeafletCore' ),
-        null,
-        false
+        true
     );
     wp_enqueue_script(
         'MapBox',
         '//api.mapbox.com/mapbox.js/v2.2.3/mapbox.js',
-        array( 'LeafletDraw' ),
+        array( 'LeafletCore' ),
         null,
-        false
+        true
+    );
+    wp_enqueue_script(
+        'LeafletDraw',
+        '//cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js',
+        array( 'MapBox' ),
+        null,
+        true
+    );
+    wp_enqueue_script(
+        'main',
+        Assets\asset_path('scripts/main.js'),
+        array('LeafletDraw'),
+        null,
+        true
     );
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\leafletScripts',100);
