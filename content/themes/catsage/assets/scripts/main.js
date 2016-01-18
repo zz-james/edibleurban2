@@ -8,8 +8,8 @@ map.setView(startPos, 15);                                            // set vie
 
 
 // ---- layers ---- //
-var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken);
-var SatelliteLayer = L.mapbox.tileLayer('mapbox.satellite');
+var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
+var SatelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
 
 baseMapLayer.addTo(map);    // add the baeMapLayer as default layer
 
@@ -19,19 +19,27 @@ var baseLayers = {
     Map       : baseMapLayer,
     Satellite : SatelliteLayer
 };
-L.control.layers(baseLayers, null).addTo(map);   // instantiate layer control add layer switching control
+L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
 
+// -------- scale indicator ---- //
+L.control.scale({position:'bottomright'}).addTo(map);
 
 // -------- drawings ----- //
 var drawnItems = new L.featureGroup();          // create a layer-group (feature group is a layer group with events + pop-ups)
 drawnItems.addTo(map);                          // add the new layer-group to the map
 
 var drawControls = new L.Control.Draw( createDrawControlOptions() );
-map.addControl(drawControls);                   // add the control to the map
+drawControls.addTo(map);                       // add the control to the map
 
 
 // --------- events ------ //
-map.on('draw:created', function(){alert('you drawed something')});        // add event handlers
+map.on('draw:created', function(e){
+  var type  = e.layerType,
+      layer = e.layer;
+
+  console.log([type,layer]);
+  drawnItems.addLayer(layer);
+});
 
 
 // ------------------------------------------------------------------- //
@@ -53,9 +61,10 @@ function createDrawControlOptions() {
                 color   : '#e1e100', // Color the shape will turn when intersects
                 message : '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
             },
-            shapeOptions      : {
+            shapeOptions : {
                 color: '#000'
-            }
+            },
+            showArea : true
         }
     },
     edit: {
