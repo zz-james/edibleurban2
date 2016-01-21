@@ -4,6 +4,9 @@ L.mapbox.accessToken = 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7M
 // ----- map ------ //
 var startPos = [52.57, -0.25];                                        // default to peterborough.
 var map      = L.mapbox.map('map', null, {scrollWheelZoom : false});  // instantiate the map
+
+map.on('load', onMapLoad);
+
 map.setView(startPos, 15);                                            // set view to our chosen geographical coordinates and zoom level
 
 
@@ -34,6 +37,19 @@ drawControls.addTo(map);                       // add the control to the map
 
 // --------- events ------ //
 
+/**
+ * this handles the map load event assigned near the top (as it happens early on)
+ */
+function onMapLoad() {
+    var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
+    json.done(function(data){
+        console.log(data);
+    });
+    json.fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
+    });
+}
 
 /**
  * When the polygon drawing is completed this method adds
@@ -49,7 +65,17 @@ map.on('draw:created', function(e){
 });
 
 
+
 // ------------------------------------------------------------------- //
+
+/**
+ * constructor for store that map application uses
+ */
+function Store() {
+
+}
+
+
 
 /**
  * factory method: create the draw controls options object
