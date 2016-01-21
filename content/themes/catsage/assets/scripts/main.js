@@ -19,7 +19,7 @@ var baseLayers = {
     Map       : baseMapLayer,
     Satellite : SatelliteLayer
 };
-L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
+var LayerManager = L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
 
 // -------- scale indicator ---- //
 L.control.scale({position:'bottomright'}).addTo(map);
@@ -33,11 +33,18 @@ drawControls.addTo(map);                       // add the control to the map
 
 
 // --------- events ------ //
+
+
+/**
+ * When the polygon drawing is completed this method adds
+ * the layer (containing the polygon) to the drawnitems feature group
+ * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
+ */
 map.on('draw:created', function(e){
   var type  = e.layerType,
       layer = e.layer;
 
-  console.log([type,layer]);
+  console.log([layer.getBounds()]);
   drawnItems.addLayer(layer);
 });
 
@@ -45,7 +52,7 @@ map.on('draw:created', function(e){
 // ------------------------------------------------------------------- //
 
 /**
- * create the draw controls options
+ * factory method: create the draw controls options object
  */
 function createDrawControlOptions() {
 

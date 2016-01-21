@@ -1,3 +1,7 @@
+html, body {
+    height: 100%;
+}
+
 // Grid system
 .main {
   @include make-sm-column($main-sm-columns);

@@ -1,0 +1,12 @@
+.flex_container {
+    display: flex;
+    flex-flow: wrap;
+}
+
+.info_container {
+    flex: 0 0 250px;
+}
+
+.map_container {
+    flex: 1;
+}
