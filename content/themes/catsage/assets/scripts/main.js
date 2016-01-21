@@ -1,3 +1,5 @@
+var store; // global variable that holds the map data.
+
 L.mapbox.accessToken = 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7MUNYs5HbhLAAg'; // access token for mapbox
 
 
@@ -43,7 +45,8 @@ drawControls.addTo(map);                       // add the control to the map
 function onMapLoad() {
     var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
     json.done(function(data){
-        console.log(data);
+        store = createStore(data);
+        render(store);
     });
     json.fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
@@ -69,12 +72,21 @@ map.on('draw:created', function(e){
 // ------------------------------------------------------------------- //
 
 /**
- * constructor for store that map application uses
+ * factory for store that map application uses construction is mainly a filter on the data to preserve only what we need
+ * @param  array data : the data from the server about the plots
+ * @return array store: the data we need.
  */
-function Store() {
-
+function createStore(data) {
+    console.log(JSON.parse(data[0].map_data));
 }
 
+/**
+ * renders the store as geojson layers on the map. each geojson layer is added to a group depending on it's land type
+ * @param  array store
+ */
+function render(store) {
+
+}
 
 
 /**
