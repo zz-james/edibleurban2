@@ -77,7 +77,11 @@ map.on('draw:created', function(e){
  * @return array store: the data we need.
  */
 function createStore(data) {
-    console.log(JSON.parse(data[0].map_data));
+    var store = [];
+    _.each(data, function(data){
+        store.push( _.pick(data, ['id', 'title','content','featured_image','map_data']) );
+    });
+    return store;
 }
 
 /**
@@ -85,7 +89,7 @@ function createStore(data) {
  * @param  array store
  */
 function render(store) {
-
+    console.dir(store)
 }
 
 
