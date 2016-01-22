@@ -30,7 +30,16 @@ var geojsonGroups = {};
 
 // create object with area types as keys add a geojson feature group for each one add them to layer control
 _.each(CONFIG.suggested_use, function(value, key, list){
-    var geojsonLayer = L.geoJson();
+    var geojsonLayer = L.geoJson(null,{
+        style         : function() {
+          return {fillColor: value || '#000000', opacity: 1, color: 'red', weight:1, fillOpacity: 0.6 };  // if no land type specified make it black
+        },
+        onEachFeature : function(feature, layer) {
+            layer.on('click',function(){
+                console.log(this.feature.properties.name);
+            }); 
+        }
+    });
     var newKey       = key.replace(/ /g,"_"); // replace spaces in key
     var icon         = '<svg width="20" height="12"><rect width="20" height="12" style="fill:'+value+'" /></svg>';
 
@@ -94,7 +103,7 @@ map.on('draw:created', function(e){
 function createStore(data) {
     var store = [];
     _.each(data, function(data){
-        store.push( _.pick(data, ['id', 'title','content','featured_image','area_type','map_data']) );
+        store.push( _.pick(data, ['id', 'title','content','image','area_type','map_data']) );
     });
     return store;
 }
@@ -107,6 +116,7 @@ function render(store) {
     _.each(store, function(element, index, list) {
         var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
         geojsonGroups[geojsonGroup].addData(element.map_data);
+        geojsonGroups[geojsonGroup].addTo(map);
     });
 }
 
