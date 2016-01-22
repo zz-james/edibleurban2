@@ -25,15 +25,16 @@ var baseLayers = {
 };
 var LayerManager = L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
 
-// ----- feature layers ------ //
-geojsonLayers = {};
+// ----- geojson feature layers ------ //
+var geojsonGroups = {};
 
-// geojson layers
+// create object with area types as keys add a geojson feature group for each one add them to layer control
 _.each(CONFIG.suggested_use, function(value, key, list){
     var geojsonLayer = L.geoJson();
     var newKey       = key.replace(/ /g,"_"); // replace spaces in key
-    var icon         = '<svg width="20" height="15"><rect width="20" height="15" style="fill:'+value+'" /></svg>';
-    geojsonLayers[newKey] = geojsonLayer;
+    var icon         = '<svg width="20" height="12"><rect width="20" height="12" style="fill:'+value+'" /></svg>';
+
+    geojsonGroups[newKey] = geojsonLayer;
     LayerManager.addOverlay(geojsonLayer, icon+'&nbsp;'+key);
 });
 
@@ -93,7 +94,7 @@ map.on('draw:created', function(e){
 function createStore(data) {
     var store = [];
     _.each(data, function(data){
-        store.push( _.pick(data, ['id', 'title','content','featured_image','map_data']) );
+        store.push( _.pick(data, ['id', 'title','content','featured_image','area_type','map_data']) );
     });
     return store;
 }
@@ -103,7 +104,10 @@ function createStore(data) {
  * @param  array store
  */
 function render(store) {
-
+    _.each(store, function(element, index, list) {
+        var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+        geojsonGroups[geojsonGroup].addData(element.map_data);
+    });
 }
 
 
