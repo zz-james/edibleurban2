@@ -12,19 +12,33 @@ map.on('load', onMapLoad);
 map.setView(startPos, 15);                                            // set view to our chosen geographical coordinates and zoom level
 
 
-// ---- layers ---- //
+// ---- base layers ---- //
 var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
-var SatelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
+var satelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
 
 baseMapLayer.addTo(map);    // add the baeMapLayer as default layer
-
 
 // ----- layers controls ----- //
 var baseLayers = {
     Map       : baseMapLayer,
-    Satellite : SatelliteLayer
+    Satellite : satelliteLayer
 };
 var LayerManager = L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
+
+// ----- feature layers ------ //
+geojsonLayers = {};
+
+// geojson layers
+_.each(CONFIG.suggested_use, function(value, key, list){
+    var geojsonLayer = L.geoJson();
+    var newKey       = key.replace(/ /g,"_"); // replace spaces in key
+    var icon         = '<svg width="20" height="15"><rect width="20" height="15" style="fill:'+value+'" /></svg>';
+    geojsonLayers[newKey] = geojsonLayer;
+    LayerManager.addOverlay(geojsonLayer, icon+'&nbsp;'+key);
+});
+
+
+
 
 // -------- scale indicator ---- //
 L.control.scale({position:'bottomright'}).addTo(map);
@@ -63,7 +77,7 @@ map.on('draw:created', function(e){
   var type  = e.layerType,
       layer = e.layer;
 
-  console.log([layer.getBounds()]);
+  console.log('drawing bounds are: '+[layer.getBounds()]);
   drawnItems.addLayer(layer);
 });
 
@@ -89,8 +103,9 @@ function createStore(data) {
  * @param  array store
  */
 function render(store) {
-    console.dir(store)
+
 }
+
 
 
 /**

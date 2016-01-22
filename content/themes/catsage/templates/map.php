@@ -13,42 +13,6 @@
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span><span class="text"> Close</span>
                 </button>
             </div>
-
-        </div>
-        <div class="map_key" >
-        <table width="100%" cellpadding="10" border="1">
-            <tbody>
-            <tr>
-               <td width="50px" style="background:#96c25d"></td>
-               <td align="left" style="padding-left:2px">Green Space</td>
-            </tr>
-            <tr>
-              <td width="50px" style="background:#d28cba"></td>
-              <td align="left" style="padding-left:2px">Indoor Space</td>
-            </tr>
-            <tr>
-               <td width="50px" style="background:#eac1c0"></td>
-               <td align="left" style="padding-left:2px">Pavement or pedestrian area</td>
-            </tr>
-            <tr>
-               <td width="50px" style="background:#eaaf24"></td>
-                <td align="left" style="padding-left:2px">Public Space</td>
-            </tr>
-            <tr>
-               <td width="50px" style="background:#aedce7"></td>
-               <td align="left" style="padding-left:2px">Rooftop</td>
-            </tr>
-            <tr>
-                <td width="50px" style="background:#f4cda3"></td>
-                <td align="left" style="padding-left:2px">Tarmac</td>
-            </tr>
-            <tr>
-                <td width="50px" style="background:#858e93"></td>
-                <td align="left" style="padding-left:2px">Vacant Land</td>
-            </tr>
-            </tbody>
-        </table>
-
         </div>
     </div>
 
