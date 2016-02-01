@@ -31,3 +31,29 @@ function excerpt_more() {
   return ' &hellip; <a href="' . get_permalink() . '">' . __('Continued', 'sage') . '</a>';
 }
 add_filter('excerpt_more', __NAMESPACE__ . '\\excerpt_more');
+
+/**
+ * verify front end ajax based login
+ */
+function ajax_login() {
+
+  check_ajax_referer( 'ajax-login-nonce', 'security' );   // first check the nonce, if it fails the function will break
+
+  // get the POST data and try sign the user on
+  $info                  = array();
+  $info['user_login']    = $_POST['log'];
+  $info['user_password'] = $_POST['pwd'];
+  $info['remember']      = true;
+
+  $user_signon = wp_signon( $info, false );
+
+  if( is_wp_error( $user_signon )) {
+    echo json_encode(array('loggedin' => false, 'message' => "Wrong username or password"));
+  } else {
+    echo json_encode(array('loggedin' => true, 'message' => "Login successful"));
+  }
+  die();
+}
+add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
+
+

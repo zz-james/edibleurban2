@@ -3,25 +3,15 @@
     flex-flow: wrap;
 }
 
-.info_container {
-    flex: 0 0 250px;
+#info_container {
+    flex: 0 0 auto;
 }
 
-.map_container {
-    flex: 1;
+#map_container {
+    flex: 1 1 auto;
 }
 
-.info_display {
+#info_container > div {
     height: 512px;
-    border: 5px solid black;
     padding-left: 3px;
-}
-
-.info_display h3 {
-    margin-top: 5px;
-}
-
-.info_display  .page-header {
-  padding-bottom: 0;
-  margin: 0;
 }

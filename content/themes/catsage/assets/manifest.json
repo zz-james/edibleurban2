@@ -3,7 +3,9 @@
 
     "main.js": {
       "files": [
-        "scripts/main.js"
+        "scripts/state.js",
+        "scripts/main.js",
+        "scripts/info-container.js"
       ],
       "main": true
     },

@@ -1,5 +1,3 @@
-var store; // global variable that holds the map data.
-
 L.mapbox.accessToken = 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7MUNYs5HbhLAAg'; // access token for mapbox
 
 
@@ -69,8 +67,8 @@ drawControls.addTo(map);                       // add the control to the map
 function onMapLoad() {
     var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
     json.done(function(data){
-        store = createStore(data);
-        render(store);
+        state.map_data = createStore(data);
+        render(state.map_data);
     });
     json.fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
