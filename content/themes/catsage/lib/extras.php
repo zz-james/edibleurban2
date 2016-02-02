@@ -36,14 +36,13 @@ add_filter('excerpt_more', __NAMESPACE__ . '\\excerpt_more');
  * verify front end ajax based login
  */
 function ajax_login() {
-
   check_ajax_referer( 'ajax-login-nonce', 'security' );   // first check the nonce, if it fails the function will break
 
   // get the POST data and try sign the user on
   $info                  = array();
-  $info['user_login']    = $_POST['log'];
-  $info['user_password'] = $_POST['pwd'];
-  $info['remember']      = true;
+  $info['user_login']    = $_POST['username'];
+  $info['user_password'] = $_POST['password'];
+  $info['remember']      = $_POST['remember'];
 
   $user_signon = wp_signon( $info, false );
 
@@ -54,6 +53,6 @@ function ajax_login() {
   }
   die();
 }
-add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
+add_action( 'wp_ajax_nopriv_ajaxlogin', __NAMESPACE__ . '\\ajax_login' );
 
 

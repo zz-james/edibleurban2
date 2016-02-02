@@ -5,12 +5,14 @@ if(!CONFIG.logged_in) {
 $('#loginform').submit(function(e){
 
     var $elem = $(e.target);
-    $elem.find('p.status').show().text('Sending user info, please wait...');
+    $elem.find('p.status').text('Sending user info, please wait...');
     var loginrequest = postLogin($elem);
 
     loginrequest.done(function(data){
         if(data.loggedin == true) {
-            document.location.hash = '';
+            CONFIG.logged_in = true;
+            addDrawControls(); // there needs to be a proper component api created
+            document.location.hash = 'start-view';
         }
     });
 
@@ -27,16 +29,21 @@ $('#loginform').submit(function(e){
  * @return {jquery promise} loginrequest - jquery ajax xhr promise
  */
 function postLogin($form) {
+
+    var data = {
+        'action'    : 'ajaxlogin',
+        'username'  : $form.find('#user_login').val(),
+        'password'  : $form.find('#user_pass').val(),
+        'remember'  : $form.find('#rememberme').val(),
+        'security'  : $form.find('#security').val()
+    };
+
     var loginrequest = $.ajax({
         type    : 'POST',
         dataType: 'json',
-        url     : 'http://edibleurban/wordpress/wp-admin/admin-ajax.php', //get from e.target.
-        data    : {
-            'action'    : 'ajaxlogin',
-            'username'  : $('loginform #user_login').val(),
-            'password'  : $('loginform #user_pass').val(),
-            'security'  : $('loginform #user_login').val()
-        },
+        url     : $form[0].action, // the url is in the action attribute of the form tag
+        data    : data
     });
+
     return loginrequest;
 }

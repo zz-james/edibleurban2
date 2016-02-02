@@ -7,22 +7,10 @@
     display: none;
 }
 
-/* display the last view on page load */
-#info_container > *:last-child {
-    display: block;
-}
-
 #info_container > *:target {
     display: block;
     width: 250px;
     animation: fade-in 0.5s linear 1;
-}
-
-/* this uses the general sibling combinator to any element following the :target element */
-/* because our default view comes last this rule will always apply to it but only if */
-/* a :target element exists. try without it and you will see what it does :-) */
-#info_container > *:target ~ * {
-    display: none;
 }
 
 .login label {

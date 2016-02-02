@@ -5,7 +5,7 @@ L.mapbox.accessToken = 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7M
 var startPos = [52.57, -0.25];                                        // default to peterborough.
 var map      = L.mapbox.map('map', null, {scrollWheelZoom : false});  // instantiate the map
 
-map.on('load', onMapLoad);
+map.on('load', render);
 
 map.setView(startPos, 15);                                            // set view to our chosen geographical coordinates and zoom level
 
@@ -25,6 +25,7 @@ var LayerManager = L.control.layers(baseLayers, null, {collapsed:false}).addTo(m
 
 // ----- geojson feature layers ------ //
 var geojsonGroups = {};
+
 
 // create object with area types as keys add a geojson feature group for each one add them to layer control
 _.each(CONFIG.suggested_use, function(value, key, list){
@@ -46,35 +47,23 @@ _.each(CONFIG.suggested_use, function(value, key, list){
 });
 
 
-
-
 // -------- scale indicator ---- //
 L.control.scale({position:'bottomright'}).addTo(map);
 
-// -------- drawings ----- //
-var drawnItems = new L.featureGroup();          // create a layer-group (feature group is a layer group with events + pop-ups)
-drawnItems.addTo(map);                          // add the new layer-group to the map
 
-var drawControls = new L.Control.Draw( createDrawControlOptions() );
-drawControls.addTo(map);                       // add the control to the map
+// -------- drawing controls (only if logged in)----- //
+function addDrawControls() {
+    var drawnItems = new L.featureGroup();          // create a layer-group (feature group is a layer group with events + pop-ups)
+    drawnItems.addTo(map);                          // add the new layer-group to the map
 
+    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItems) );
+    drawControls.addTo(map);                       // add the control to the map
 
-// --------- events ------ //
-
-/**
- * this handles the map load event assigned near the top (as it happens early on)
- */
-function onMapLoad() {
-    var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
-    json.done(function(data){
-        state.map_data = createStore(data);
-        render(state.map_data);
-    });
-    json.fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
-        console.log( "Request Failed: " + err );
-    });
+    return drawnItems;
 }
+
+var drawnItemsGroup = CONFIG.logged_in ? addDrawControls() : '';
+
 
 /**
  * When the polygon drawing is completed this method adds
@@ -86,36 +75,54 @@ map.on('draw:created', function(e){
       layer = e.layer;
 
   console.log('drawing bounds are: '+[layer.getBounds()]);
-  drawnItems.addLayer(layer);
+  drawnItemsGroup.addLayer(layer);
 });
 
 
 
-// ------------------------------------------------------------------- //
 
-/**
- * factory for store that map application uses construction is mainly a filter on the data to preserve only what we need
- * @param  array data : the data from the server about the plots
- * @return array store: the data we need.
- */
-function createStore(data) {
-    var store = [];
-    _.each(data, function(data){
-        store.push( _.pick(data, ['id', 'title','content','image','area_type','map_data']) );
-    });
-    return store;
+
+
+// -------- info button control ----- //
+
+// create control 'class' to make an instance of
+L.Control.Info = createInfoControl();
+
+// info control factory
+L.control.info = new L.Control.Info({
+    'text'      : 'info',
+    'iconUrl'   : 'https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png',
+    'onClick'   : onInfoClick,
+    'maxWidth'  : '30px'
+}).addTo(map);
+
+
+function onInfoClick(e){
+    console.log('this happened');
+    if(!document.location.hash) {
+        document.location.hash = 'start-view';
+    } else {
+        document.location.hash = '';
+    }
 }
 
+
+// ------------------------------------------------------------------- //
+
+
+
 /**
- * renders the store as geojson layers on the map. each geojson layer is added to a group depending on it's land type
- * @param  array store
+ * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
+ * @param  array mapdata
  */
-function render(store) {
-    _.each(store, function(element, index, list) {
-        var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
-        geojsonGroups[geojsonGroup].addData(element.map_data);
-        geojsonGroups[geojsonGroup].addTo(map);
-    });
+function render() {
+    // var mapdata = state.map_data;
+
+    // _.each(mapdata, function(element, index, list) {
+    //     var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+    //     geojsonGroups[geojsonGroup].addData(element.map_data);
+    //     geojsonGroups[geojsonGroup].addTo(map);
+    // });
 }
 
 
@@ -123,7 +130,7 @@ function render(store) {
 /**
  * factory method: create the draw controls options object
  */
-function createDrawControlOptions() {
+function createDrawControlOptions(group) {
 
   return {
     draw: {
@@ -144,7 +151,7 @@ function createDrawControlOptions() {
         }
     },
     edit: {
-        featureGroup: drawnItems,
+        featureGroup: group,
         selectedPathOptions: {
             maintainColor: true,
             color: '#000',
@@ -153,3 +160,47 @@ function createDrawControlOptions() {
     }
   }
 }
+
+/**
+ * factory method: create the info button class
+ * refers to the IControl interface
+ * http://leafletjs.com/reference.html#icontrol
+ */
+function createInfoControl() {
+    var control = L.Control.extend({
+
+        options: {
+            position: 'topleft'
+        },
+
+        initialise: function(options) {
+            L.Util.setOptions(this.options);
+        },
+
+        onAdd: function(map) {
+            var container = L.DomUtil.create('div', 'leaflet-info-button');
+
+            this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
+            this.infoButton.width = this.maxWidth;
+
+            var image     = L.DomUtil.create('img', 'leaflet-buttons-into-image', this.infoButton);
+            image.src = this.options.iconUrl;
+
+            container.setAttribute('border', '1px solid red' );
+
+            L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
+            return container;
+        },
+
+        onRemove: function(map) {
+            L.DomEvent.removeListener(this.infoButton, 'click', this._clicked, this);
+        },
+
+        _clicked: function(e) {
+            onInfoClick();
+            L.DomEvent.preventDefault(e)
+        }
+    });
+    return control;
+}
+

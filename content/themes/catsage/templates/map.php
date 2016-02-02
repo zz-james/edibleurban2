@@ -53,6 +53,15 @@
             </div>
         </div>
 
+        <div id="start-view">
+            <div>
+                <div>
+                    <h3>Get Started</h3>
+                </div>
+                Use the <span class="leaflet-draw-toolbar"><a style="display: inline-block;width:32px;height:32px" class="leaflet-draw-draw-polygon"></a></span> icon to enable the drawing tool. Move to the point where you want to begin drawing your plot and click/tab to begin. 
+            </div>
+        </div>
+
         <div id="login-view">
             <div>
                 <div>

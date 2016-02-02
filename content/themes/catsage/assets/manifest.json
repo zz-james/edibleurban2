@@ -4,7 +4,7 @@
     "main.js": {
       "files": [
         "scripts/state.js",
-        "scripts/main.js",
+        "scripts/map.js",
         "scripts/info-container.js"
       ],
       "main": true
