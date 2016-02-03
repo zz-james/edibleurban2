@@ -12,8 +12,9 @@ function MapView($el, props) {
       map          = L.mapbox.map('map', null, {scrollWheelZoom : false}),
 
       layerControl    = undefined, // we define these later
-      drawnItemsGroup = undefined,
       overlayGroup    = undefined;
+      drawnItemsGroup = undefined, // this becomes the editable layer
+
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -32,7 +33,7 @@ function MapView($el, props) {
     // other controls initialisations
     L.control.scale({position:'bottomright'}).addTo(map); // scale indicator
 
-    CONFIG.logged_in ? this.addDrawControls() : null; // only add draw controls here if initialising with a logged in session
+    CONFIG.logged_in ? this.enableDrawing() : null; // only add draw controls here if initialising with a logged in session
 
     // create button to control the slide out help panel
     L.control.info = createInfoControl({
@@ -55,12 +56,12 @@ function MapView($el, props) {
   /**
    * I think we'll be coming back to this little monkey....
    */
-  this.addDrawControls = function() {
+  this.enableDrawing = function() {
     drawnItemsGroup = new L.featureGroup();  // create a layer-group (feature group is a layer group with events + pop-ups)
     drawnItemsGroup.addTo(map);              // add the new layer-group to the map
 
-    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) );
-    drawControls.addTo(map);                       // add the control to the map
+    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) ); // instance draw controls and pass the drawnitems group as the editable layer
+    drawControls.addTo(map);                 // add the control to the map
   }
 
   /* ----------------- private functions ------------------ */
@@ -124,13 +125,28 @@ function MapView($el, props) {
      * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
      */
     map.on('draw:created', function(e){
-      var type  = e.layerType,
-          layer = e.layer;
+      var type  = e.layerType,  // they're all polygons
+          layer = e.layer;      // the layer that was just created
 
-      console.log('drawing bounds are: '+[layer.getBounds()]);
+      console.dir(layer);
       drawnItemsGroup.addLayer(layer);
+      // we need to pop up the enter details form now.
+      // and maybe disable drawing button so only one polygon can be drawn?
     });
 
+    map.on('draw:edited', function(e){
+      // nothing new is created but the details of the drawnitems layer group have changed.
+
+      console.dir(e.layers);
+        // var layers = e.layers;
+        // layers.eachLayer(function (layer) {
+        // //do whatever you want, most likely save back to db
+        // });
+    });
+
+    map.on('draw:deleted', function(e){
+      console.log(e);
+    });
 
 
   }

@@ -14402,8 +14402,9 @@ function MapView($el, props) {
       map          = L.mapbox.map('map', null, {scrollWheelZoom : false}),
 
       layerControl    = undefined, // we define these later
-      drawnItemsGroup = undefined,
       overlayGroup    = undefined;
+      drawnItemsGroup = undefined, // this becomes the editable layer
+
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -14422,7 +14423,7 @@ function MapView($el, props) {
     // other controls initialisations
     L.control.scale({position:'bottomright'}).addTo(map); // scale indicator
 
-    CONFIG.logged_in ? this.addDrawControls() : null; // only add draw controls here if initialising with a logged in session
+    CONFIG.logged_in ? this.enableDrawing() : null; // only add draw controls here if initialising with a logged in session
 
     // create button to control the slide out help panel
     L.control.info = createInfoControl({
@@ -14445,7 +14446,7 @@ function MapView($el, props) {
   /**
    * I think we'll be coming back to this little monkey....
    */
-  this.addDrawControls = function() {
+  this.enableDrawing = function() {
     drawnItemsGroup = new L.featureGroup();  // create a layer-group (feature group is a layer group with events + pop-ups)
     drawnItemsGroup.addTo(map);              // add the new layer-group to the map
 
@@ -14515,12 +14516,20 @@ function MapView($el, props) {
      */
     map.on('draw:created', function(e){
       var type  = e.layerType,
-          layer = e.layer;
+          layer = e.layer;   // somehow use the leaflet id and set to 'currently edited id'
 
-      console.log('drawing bounds are: '+[layer.getBounds()]);
+      console.dir(layer);
       drawnItemsGroup.addLayer(layer);
     });
-
+    map.on('draw:editstart',function(e){
+      console.dir(e);
+    });
+    map.on('draw:edited', function(e){
+      var type  = e.layerType,
+          layer = e.layers._layers;
+      console.dir(layer);
+    });
+    // draw:deleted
 
 
   }
@@ -14705,8 +14714,11 @@ function InfoWindowView($el, props) {
         loginrequest.done(function(data){
             if(data.loggedin == true) {
                 CONFIG.logged_in = true;
-                map.addDrawControls();
-                document.location.hash = 'start-view';
+                map.enableDrawing();
+                store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: 'start'
+                });
             }
         });
 

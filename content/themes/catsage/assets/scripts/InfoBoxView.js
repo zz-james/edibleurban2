@@ -55,8 +55,11 @@ function InfoWindowView($el, props) {
         loginrequest.done(function(data){
             if(data.loggedin == true) {
                 CONFIG.logged_in = true;
-                map.addDrawControls();
-                document.location.hash = 'start-view';
+                map.enableDrawing();
+                store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: 'start'
+                });
             }
         });
 

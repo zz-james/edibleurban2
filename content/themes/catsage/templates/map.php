@@ -10,7 +10,9 @@
                 </div>
                 <div class="intro-text well">
                     <p>Currently, this page features an interactive and participatory map of the potential for urban agriculture in peterborough, UK. This will son be expanded to included other cities. The purpose of the map is to collected data on land availability in cities to grow&nbsp;food. For example, mapping rooftops, tarmac, vacant lots, underused grass, land around housing. Users can also suggest an alternative food producing use for these spaces.&nbsp;Most people think there isn’t any land available in cities to grow substantial food; this map aims to prove them wrong.</p>
-                    <a class="btn btn-info" href="#login-view">
+                    <a  class="btn btn-info" 
+                        href="#login-view" 
+                        onclick="store.dispatch( { type:'SIDEBAR_VIEW', view:'login' }); return false;" >
                         <span class="text"> Next</span>
                     </a>
                 </div>
