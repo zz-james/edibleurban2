@@ -46,10 +46,14 @@
 
         <div id="display-view">
             <div>
-                <div class="page-header">
-                    <h3>Suggested Use</h3>
+                <div>
+                    <img class='plot-image' />
+                    <h3 class='plot-title'>?</h3>
                 </div>
-                <!-- the static view content, enhanceable with javascript -->
+                <div class="plot-content">?
+                </div>
+                <span>Area Type: </span><span class="plot-area-type"></span><br />
+                <span>Suggest Use: </span><span class="plot-suggested-use"></span>
             </div>
         </div>
 

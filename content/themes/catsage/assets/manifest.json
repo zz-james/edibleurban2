@@ -3,9 +3,11 @@
 
     "main.js": {
       "files": [
+        "scripts/polyfills.js",
+        "scripts/MapView.js",
+        "scripts/InfoBoxView.js",
         "scripts/state.js",
-        "scripts/map.js",
-        "scripts/info-container.js"
+        "scripts/ajax.js"
       ],
       "main": true
     },

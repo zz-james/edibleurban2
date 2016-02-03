@@ -15,3 +15,12 @@
     height: 512px;
     padding-left: 3px;
 }
+
+.leaflet-buttons-info-button {
+    overflow: hidden;
+    background-image:url(https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png);
+    background-position: 0 -165px;
+    width: 52px;
+    height: 52px;
+    cursor: pointer;
+}

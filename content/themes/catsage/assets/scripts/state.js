@@ -1,135 +1,85 @@
-// es5 polyfill for object.assign
-if (typeof Object.assign != 'function') {
-  (function () {
-    Object.assign = function (target) {
-      'use strict';
-      if (target === undefined || target === null) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var output = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var source = arguments[index];
-        if (source !== undefined && source !== null) {
-          for (var nextKey in source) {
-            if (source.hasOwnProperty(nextKey)) {
-              output[nextKey] = source[nextKey];
-            }
-          }
-        }
-      }
-      return output;
-    };
-  })();
-}
-
-
-// we're using the redux pattern here so
-// we have this single global state tree
-// if the initial render is slow we could populate map data?
-function getInitialState() {
-    return {
-        map :{
-            map_data     : [],
-            active_layer : undefined
-        },
-        info_window : {
-            view: '',
-            displayed: null
-        },
-        counter: 0
-    }
-}
-
-var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
-
-json.done(function(data){
-    // state.map_data = createStore(data);   // this needs to trigger the rendering
-    store.dispatch({ type:'ADDPLOTS', plots:createStore(data) });
-});
-
-json.fail(function( jqxhr, textStatus, error ) {
-    var err = textStatus + ", " + error;
-    console.log( "Request Failed: " + err );
-});
-
 
 /**
- * factory for store that map application uses construction is mainly a filter on the data to preserve only what we need
- * @param  array data : the data from the server about the plots
- * @return array store: the data we need.
+ * Redux.combineReducers is a factory method which returns a reducer function (state, action) => state
+ * keys are the props managed by the child reducers, values are the names of the relevant child reducers
+ * @type {[type]}
  */
-function createStore(data) {
-    var plots = [];
-    _.each(data, function(data){
-        plots.push( _.pick(data, ['id', 'title','content','image','area_type','map_data']) );
-    });
-    return plots;
-}
-
-/***********************************************************/
+var edibleUrbanApp = Redux.combineReducers({
+    map: plots,
+    info_window: info_window
+});
 
 /**
- * This is a reducer, a pure function signiture is (state,action) => state
- * it describes how an action transforms the state into the next state
- *
- * the shape of the state is up to you, it can be primary, an array or 
- * an object or even a immutable.js data structure. The only important part
- * is that you should not mutate the state object, but return a new object
- * if the state changes.
- *
- * in this example we use a switch statement and strings but you can use a
- * helper that follows a different convention (such as function maps) if this
- * makes sense for your project.
+ * reducer to manage the map part of the state tree
+ * logically this should be called 'map' but that is a reservered word
+ * @param  {object} state:  the map part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the map part of the state tree
  */
-
-function counter(state, action) {
+function plots(state, action) {
 
     if(typeof state === 'undefined') {
-        return getInitialState();
+        state = {
+            map_date: [],
+            active_layer : undefined
+        };
     }
 
-    switch(action.type) {
-        case 'ADDPLOTS' :
-            return Object.assign( {}, state, {
-                map : Object.assign( {}, state.map, {
-                    map_data : action.plots
-                })
-            });
-        case 'INCREMENT':
-            return Object.assign({}, state, {
-                counter: state.counter + 1
-            });
-            break;
-        case 'DECREMENT':
-            return Object.assign({}, state, {
-                counter: state.counter - 1
-            });
+    switch (action.type) {
+        case 'ADDPLOTS':
+            return { map_data : action.plots, active_layer : state.active_layer }
             break;
         default:
             return state;
     }
-
 }
 
 /**
- * create a Redux store holding the state of your app/
+ * reducer to manage the info_window part of the state tree
+ * @param  {object} state:  the info_window part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the info_window part of the state tree
+ */
+function info_window(state, action) {
+
+    if(typeof state === 'undefined') {
+        state = {
+            view     : CONFIG.logged_in ? '' : 'help',
+            displayed: null
+        };
+    }
+
+    switch(action.type) {
+        case 'SIDEBAR_VIEW':
+            return { view: action.view, displayed: action.id };
+            break;
+        default:
+            return state
+    }
+}
+
+/**
+ * create a Redux store from the parent edibleUrbanApp reducer
+ * holding the complete state of the app.
  * its API is {subscribe, dispatch, getState}
  */
-var store = Redux.createStore(counter);
+var store = Redux.createStore(edibleUrbanApp);
 
 var renderApp = function() {
-    console.log(store.getState());
+    // console.log(store.getState());
+    infoWindow.render(store.getState().info_window);
+    map.render(store.getState().map);
 }
 
 /**
- * called any time and action has been dispatched so you can
+ * the method passed to subscribe is called any time
+ * an action has been dispatched so you can
  * update the UI of your application
  */
 store.subscribe(renderApp);
 renderApp();
 
-store.dispatch({type:'INCREMENT'});  // 1
+// store.dispatch({type:'INCREMENT'});  // 1
 // store.dispatch({type:'INCREMENT'});  // 2
 // store.dispatch({type:'DECREMENT'});  // 1
 

@@ -14388,37 +14388,450 @@ if (typeof Object.assign != 'function') {
     };
   })();
 }
+/**
+ * MapView object
+ * @param {jquery} $el   [jquery object wrapping parent element of DOM fragment we're managing]
+ * @param {object} props [object containing config props]
+ */
+function MapView($el, props) {
 
+  this.$el = $el;
+  var scope        = this,
+      accessToken  = props.accessToken,
+      startPos     = props.startPos,
+      map          = L.mapbox.map('map', null, {scrollWheelZoom : false}),
 
-// we're using the redux pattern here so
-// we have this single global state tree
-// if the initial render is slow we could populate map data?
-function getInitialState() {
+      layerControl    = undefined, // we define these later
+      drawnItemsGroup = undefined,
+      overlayGroup    = undefined;
+
+  /* ------------------- public methods ------------------- */
+  this.initialise = function() {
+    L.mapbox.accessToken = accessToken;
+    map.setView(startPos, 15);
+
+    // layer initialisations
+    var baseLayers = createBaseLayers(); // object that holds base layers {name:tilelayer}
+    baseLayers.Map.addTo(map);           // add the base Map layer as default layer
+
+    layerControl = createLayerControl(baseLayers);
+    layerControl.addTo(map);
+
+    overlayGroup = createAndAddOverlayLayers();
+
+    // other controls initialisations
+    L.control.scale({position:'bottomright'}).addTo(map); // scale indicator
+
+    CONFIG.logged_in ? this.addDrawControls() : null; // only add draw controls here if initialising with a logged in session
+
+    // create button to control the slide out help panel
+    L.control.info = createInfoControl({
+        'text'      : 'info',
+        'iconUrl'   : 'https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png',
+        'maxWidth'  : '30px'
+    }).addTo(map);
+
+    bindEvents();
+  }
+
+  this.render = function(state) {
+    renderPlots(state.map_data);
+  };
+
+  this.hide = function() {
+    unbindEvents();
+  };
+
+  /**
+   * I think we'll be coming back to this little monkey....
+   */
+  this.addDrawControls = function() {
+    drawnItemsGroup = new L.featureGroup();  // create a layer-group (feature group is a layer group with events + pop-ups)
+    drawnItemsGroup.addTo(map);              // add the new layer-group to the map
+
+    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) );
+    drawControls.addTo(map);                       // add the control to the map
+  }
+
+  /* ----------------- private functions ------------------ */
+
+  function createBaseLayers() {
+    var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
+    var satelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
     return {
-        map :{
-            map_data     : [],
+        Map       : baseMapLayer,
+        Satellite : satelliteLayer
+    };                          // group layers in object to send to the layer control
+
+  }
+
+  function createLayerControl(baseLayers) {
+    return L.control.layers(baseLayers, null, {collapsed:false});   // instantiate layer control add layer switching control
+  }
+
+  /**
+   * generates a geojson feature group layer for every entry specified in suggested use array (part of CONFIG)
+   * @return {object} collection of geoJSON feature groups stored by suggested use key
+   */
+  function createAndAddOverlayLayers() {
+
+    var overlayGroup = {};
+
+    // create object with area types as keys add a geojson feature group for each one add them to layer control
+    _.each(CONFIG.suggested_use, function(value, key, list) {
+
+        var geojsonLayer = L.geoJson( null , {
+
+            style         : function() {
+              return { fillColor: value || '#000000', opacity: 1, color: 'red', weight:1, fillOpacity: 0.6 };  // if no land type specified make it black
+            },
+
+            onEachFeature : function(feature, layer) { // each feature in the layer will have this applied when it is added
+                layer.on('click',function(){
+                  store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: 'display',
+                    id  : this.feature.id
+                  });
+                });
+            }
+
+        });
+
+        var newKey = key.replace(/ /g,"_"); // replace spaces in key e.g. 'pedestrial area' becomes 'pedestrian_area'
+        var icon   = '<svg width="20" height="12"><rect width="20" height="12" style="fill:'+value+'" /></svg>';
+
+        overlayGroup[newKey] = geojsonLayer;
+        layerControl.addOverlay(geojsonLayer, icon+'&nbsp;'+key);
+    }); // end of _each loop
+    return overlayGroup;
+  }
+
+  function bindEvents() {
+    /**
+     * When the polygon drawing is completed this method adds
+     * the layer (containing the polygon) to the drawnitems feature group
+     * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
+     */
+    map.on('draw:created', function(e){
+      var type  = e.layerType,
+          layer = e.layer;
+
+      console.log('drawing bounds are: '+[layer.getBounds()]);
+      drawnItemsGroup.addLayer(layer);
+    });
+
+
+
+  }
+
+  function unbindEvents() {
+
+  }
+
+
+  /**
+ * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
+ * @param  array mapdata
+ */
+function renderPlots(mapdata) {
+    _.each(mapdata, function(element, index, list) {
+        element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
+        var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+        overlayGroup[geojsonGroup].addData(element.map_data);
+        overlayGroup[geojsonGroup].addTo(map);
+    });
+}
+
+  /**
+   * factory method: create the draw controls options object
+   */
+  function createDrawControlOptions(group) {
+
+    return {
+      draw: {
+          polyline : false,
+          rectangle: false,
+          circle   : false,
+          marker   : false,
+          polygon  : {
+              allowIntersection : false, // Restricts shapes to simple polygons
+              drawError         : {
+                  color   : '#e1e100', // Color the shape will turn when intersects
+                  message : '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+              },
+              shapeOptions : {
+                  color: '#000'
+              },
+              showArea : true
+          }
+      },
+      edit: {
+          featureGroup: group,
+          selectedPathOptions: {
+          maintainColor: true,
+          color: '#000',
+          weight: 10
+        }
+      }
+    }
+  }
+
+
+  /**
+   * factory method: create the info button class
+   * and return a new instance of it.
+   * refers to the IControl interface
+   * http://leafletjs.com/reference.html#icontrol
+   */
+  function createInfoControl(props) {
+      var control = L.Control.extend({
+
+          options: {
+              position: 'bottomleft'
+          },
+
+          initialise: function(options) {
+              L.Util.setOptions(this.options);
+          },
+
+          onAdd: function(map) {
+              var container = L.DomUtil.create('div', 'leaflet-info-button');
+
+              this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
+              this.infoButton.width = this.maxWidth;
+
+              // var image     = L.DomUtil.create('img', 'leaflet-buttons-into-image', this.infoButton);
+              // image.src = this.options.iconUrl;
+
+              container.setAttribute('border', '1px solid red' );
+
+              L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
+              return container;
+          },
+
+          onRemove: function(map) {
+              L.DomEvent.removeListener(this.infoButton, 'click', this._clicked, this);
+          },
+
+          _clicked: function(e) {
+              if(store.getState().info_window.view) {
+                store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: ''
+                });
+                return;
+              }
+              if(CONFIG.logged_in) {
+                store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: 'start'
+                });
+              } else {
+                store.dispatch({
+                    type:'SIDEBAR_VIEW',
+                    view: 'help'
+                });
+              }
+              L.DomEvent.preventDefault(e)
+          }
+      });
+      return new control(props);
+  }
+
+  this.initialise();
+
+  return this;
+}
+
+var map = new MapView(null, {
+    accessToken : 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7MUNYs5HbhLAAg', // access token for mapbox
+    startPos    : [52.57, -0.25],
+}); // we pass in null for the $el as leaflet.js will handle the DOM
+/**
+ * InfoBoxView view object constructor
+ * @param {jquery} $el   [jquery object wrapping parent element of DOM fragment we're managing]
+ * @param {object} props [object containing config props]
+ */
+function InfoWindowView($el, props) {
+
+  this.$el  = $el;
+  var scope    = this,
+      $display = $el.find('#display-view');  // cache this as we render here quite a bit
+      // blah  = props.blah, // (.. etc)
+
+  /* ------------------- public methods ------------------- */
+  this.initialise = function() {
+    // you can just do stuff in the body of the function but
+    // this is callable from outside if you need to
+    bindEvents();
+  }
+
+  this.render = function(infoWindow) {
+    document.location.hash = infoWindow.view ? infoWindow.view+"-view" : infoWindow.view;
+    if(infoWindow.view === 'display') {
+      populateInfoWindow(infoWindow.displayed);
+    }
+  };
+
+  this.hide = function() {
+    unbindEvents();
+  };
+
+
+
+  /* ----------------- private functions ------------------ */
+
+  function populateInfoWindow(id) {
+    var plot = _.where(store.getState().map.map_data, {id: id})[0];
+    console.log(plot);
+    $display.find('.plot-image').attr("src", plot.image);
+    $display.find('.plot-title').html(plot.title.rendered);
+    $display.find('.plot-content').html(plot.content.rendered);
+    $display.find('.plot-suggested-use').html(plot.map_data.properties.areatype);
+    $display.find('.plot-area-type').html(plot.map_data.properties.areatype);
+  }
+
+  function bindEvents() {
+    $('#loginform').submit(function(e){
+
+        var $elem = $(e.target);
+        $elem.find('p.status').text('Sending user info, please wait...');
+        var loginrequest = postLogin($elem);
+
+        loginrequest.done(function(data){
+            if(data.loggedin == true) {
+                CONFIG.logged_in = true;
+                map.addDrawControls();
+                document.location.hash = 'start-view';
+            }
+        });
+
+        loginrequest.fail(function(data){
+            console.log('login network fail :-(');
+        });
+
+        e.preventDefault();
+    });
+  }
+
+  function unbindEvents() {
+    $('#loginform').off('submit');
+  }
+
+  this.initialise();
+
+  return this;
+}
+
+var infoWindow = new InfoWindowView($('#info_container'), {});
+
+
+/**
+ * Redux.combineReducers is a factory method which returns a reducer function (state, action) => state
+ * keys are the props managed by the child reducers, values are the names of the relevant child reducers
+ * @type {[type]}
+ */
+var edibleUrbanApp = Redux.combineReducers({
+    map: plots,
+    info_window: info_window
+});
+
+/**
+ * reducer to manage the map part of the state tree
+ * logically this should be called 'map' but that is a reservered word
+ * @param  {object} state:  the map part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the map part of the state tree
+ */
+function plots(state, action) {
+
+    if(typeof state === 'undefined') {
+        state = {
+            map_date: [],
             active_layer : undefined
-        },
-        info_window : {
-            view: '',
-            displayed: null
-        },
-        counter: 0
+        };
+    }
+
+    switch (action.type) {
+        case 'ADDPLOTS':
+            return { map_data : action.plots, active_layer : state.active_layer }
+            break;
+        default:
+            return state;
     }
 }
+
+/**
+ * reducer to manage the info_window part of the state tree
+ * @param  {object} state:  the info_window part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the info_window part of the state tree
+ */
+function info_window(state, action) {
+
+    if(typeof state === 'undefined') {
+        state = {
+            view     : CONFIG.logged_in ? '' : 'help',
+            displayed: null
+        };
+    }
+
+    switch(action.type) {
+        case 'SIDEBAR_VIEW':
+            return { view: action.view, displayed: action.id };
+            break;
+        default:
+            return state
+    }
+}
+
+/**
+ * create a Redux store from the parent edibleUrbanApp reducer
+ * holding the complete state of the app.
+ * its API is {subscribe, dispatch, getState}
+ */
+var store = Redux.createStore(edibleUrbanApp);
+
+var renderApp = function() {
+    // console.log(store.getState());
+    infoWindow.render(store.getState().info_window);
+    map.render(store.getState().map);
+}
+
+/**
+ * the method passed to subscribe is called any time
+ * an action has been dispatched so you can
+ * update the UI of your application
+ */
+store.subscribe(renderApp);
+renderApp();
+
+// store.dispatch({type:'INCREMENT'});  // 1
+// store.dispatch({type:'INCREMENT'});  // 2
+// store.dispatch({type:'DECREMENT'});  // 1
+
+
+
+
+
+
+
+
 
 var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
 
 json.done(function(data){
-    // state.map_data = createStore(data);   // this needs to trigger the rendering
-    store.dispatch({ type:'ADDPLOTS', plots:createStore(data) });
+    store.dispatch({
+        type:'ADDPLOTS',
+        plots:createStore(data)
+    });
 });
 
 json.fail(function( jqxhr, textStatus, error ) {
     var err = textStatus + ", " + error;
     console.log( "Request Failed: " + err );
 });
-
 
 /**
  * factory for store that map application uses construction is mainly a filter on the data to preserve only what we need
@@ -14432,312 +14845,6 @@ function createStore(data) {
     });
     return plots;
 }
-
-/***********************************************************/
-
-/**
- * This is a reducer, a pure function signiture is (state,action) => state
- * it describes how an action transforms the state into the next state
- *
- * the shape of the state is up to you, it can be primary, an array or 
- * an object or even a immutable.js data structure. The only important part
- * is that you should not mutate the state object, but return a new object
- * if the state changes.
- *
- * in this example we use a switch statement and strings but you can use a
- * helper that follows a different convention (such as function maps) if this
- * makes sense for your project.
- */
-
-function counter(state, action) {
-
-    if(typeof state === 'undefined') {
-        return getInitialState();
-    }
-
-    switch(action.type) {
-        case 'ADDPLOTS' :
-            return Object.assign( {}, state, {
-                map : Object.assign( {}, state.map, {
-                    map_data : action.plots
-                })
-            });
-        case 'INCREMENT':
-            return Object.assign({}, state, {
-                counter: state.counter + 1
-            });
-            break;
-        case 'DECREMENT':
-            return Object.assign({}, state, {
-                counter: state.counter - 1
-            });
-            break;
-        default:
-            return state;
-    }
-
-}
-
-/**
- * create a Redux store holding the state of your app/
- * its API is {subscribe, dispatch, getState}
- */
-var store = Redux.createStore(counter);
-
-var renderApp = function() {
-    console.log(store.getState());
-}
-
-/**
- * called any time and action has been dispatched so you can
- * update the UI of your application
- */
-store.subscribe(renderApp);
-renderApp();
-
-store.dispatch({type:'INCREMENT'});  // 1
-// store.dispatch({type:'INCREMENT'});  // 2
-// store.dispatch({type:'DECREMENT'});  // 1
-
-
-
-
-
-
-
-
-
-L.mapbox.accessToken = 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7MUNYs5HbhLAAg'; // access token for mapbox
-
-
-// ----- map ------ //
-var startPos = [52.57, -0.25];                                        // default to peterborough.
-var map      = L.mapbox.map('map', null, {scrollWheelZoom : false});  // instantiate the map
-
-map.on('load', render);
-
-map.setView(startPos, 15);                                            // set view to our chosen geographical coordinates and zoom level
-
-
-// ---- base layers ---- //
-var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
-var satelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
-
-baseMapLayer.addTo(map);    // add the baeMapLayer as default layer
-
-// ----- layers controls ----- //
-var baseLayers = {
-    Map       : baseMapLayer,
-    Satellite : satelliteLayer
-};
-var LayerManager = L.control.layers(baseLayers, null, {collapsed:false}).addTo(map);   // instantiate layer control add layer switching control
-
-// ----- geojson feature layers ------ //
-var geojsonGroups = {};
-
-
-// create object with area types as keys add a geojson feature group for each one add them to layer control
-_.each(CONFIG.suggested_use, function(value, key, list){
-    var geojsonLayer = L.geoJson(null,{
-        style         : function() {
-          return {fillColor: value || '#000000', opacity: 1, color: 'red', weight:1, fillOpacity: 0.6 };  // if no land type specified make it black
-        },
-        onEachFeature : function(feature, layer) {
-            layer.on('click',function(){
-                console.log(this.feature.properties.name);
-            }); 
-        }
-    });
-    var newKey       = key.replace(/ /g,"_"); // replace spaces in key
-    var icon         = '<svg width="20" height="12"><rect width="20" height="12" style="fill:'+value+'" /></svg>';
-
-    geojsonGroups[newKey] = geojsonLayer;
-    LayerManager.addOverlay(geojsonLayer, icon+'&nbsp;'+key);
-});
-
-
-// -------- scale indicator ---- //
-L.control.scale({position:'bottomright'}).addTo(map);
-
-
-// -------- drawing controls (only if logged in)----- //
-function addDrawControls() {
-    var drawnItems = new L.featureGroup();          // create a layer-group (feature group is a layer group with events + pop-ups)
-    drawnItems.addTo(map);                          // add the new layer-group to the map
-
-    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItems) );
-    drawControls.addTo(map);                       // add the control to the map
-
-    return drawnItems;
-}
-
-var drawnItemsGroup = CONFIG.logged_in ? addDrawControls() : '';
-
-
-/**
- * When the polygon drawing is completed this method adds
- * the layer (containing the polygon) to the drawnitems feature group
- * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
- */
-map.on('draw:created', function(e){
-  var type  = e.layerType,
-      layer = e.layer;
-
-  console.log('drawing bounds are: '+[layer.getBounds()]);
-  drawnItemsGroup.addLayer(layer);
-});
-
-
-
-
-
-
-// -------- info button control ----- //
-
-// create control 'class' to make an instance of
-L.Control.Info = createInfoControl();
-
-// info control factory
-L.control.info = new L.Control.Info({
-    'text'      : 'info',
-    'iconUrl'   : 'https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png',
-    'onClick'   : onInfoClick,
-    'maxWidth'  : '30px'
-}).addTo(map);
-
-
-function onInfoClick(e){
-    console.log('this happened');
-    if(!document.location.hash) {
-        document.location.hash = 'start-view';
-    } else {
-        document.location.hash = '';
-    }
-}
-
-
-// ------------------------------------------------------------------- //
-
-
-
-/**
- * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
- * @param  array mapdata
- */
-function render() {
-    // var mapdata = state.map_data;
-
-    // _.each(mapdata, function(element, index, list) {
-    //     var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
-    //     geojsonGroups[geojsonGroup].addData(element.map_data);
-    //     geojsonGroups[geojsonGroup].addTo(map);
-    // });
-}
-
-
-
-/**
- * factory method: create the draw controls options object
- */
-function createDrawControlOptions(group) {
-
-  return {
-    draw: {
-        polyline : false,
-        rectangle: false,
-        circle   : false,
-        marker   : false,
-        polygon  : {
-            allowIntersection : false, // Restricts shapes to simple polygons
-            drawError         : {
-                color   : '#e1e100', // Color the shape will turn when intersects
-                message : '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
-            },
-            shapeOptions : {
-                color: '#000'
-            },
-            showArea : true
-        }
-    },
-    edit: {
-        featureGroup: group,
-        selectedPathOptions: {
-            maintainColor: true,
-            color: '#000',
-            weight: 10
-        }
-    }
-  }
-}
-
-/**
- * factory method: create the info button class
- * refers to the IControl interface
- * http://leafletjs.com/reference.html#icontrol
- */
-function createInfoControl() {
-    var control = L.Control.extend({
-
-        options: {
-            position: 'topleft'
-        },
-
-        initialise: function(options) {
-            L.Util.setOptions(this.options);
-        },
-
-        onAdd: function(map) {
-            var container = L.DomUtil.create('div', 'leaflet-info-button');
-
-            this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
-            this.infoButton.width = this.maxWidth;
-
-            var image     = L.DomUtil.create('img', 'leaflet-buttons-into-image', this.infoButton);
-            image.src = this.options.iconUrl;
-
-            container.setAttribute('border', '1px solid red' );
-
-            L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
-            return container;
-        },
-
-        onRemove: function(map) {
-            L.DomEvent.removeListener(this.infoButton, 'click', this._clicked, this);
-        },
-
-        _clicked: function(e) {
-            onInfoClick();
-            L.DomEvent.preventDefault(e)
-        }
-    });
-    return control;
-}
-
-
-if(!CONFIG.logged_in) {
-    document.location.hash = "help-view";
-}
-
-$('#loginform').submit(function(e){
-
-    var $elem = $(e.target);
-    $elem.find('p.status').text('Sending user info, please wait...');
-    var loginrequest = postLogin($elem);
-
-    loginrequest.done(function(data){
-        if(data.loggedin == true) {
-            CONFIG.logged_in = true;
-            addDrawControls(); // there needs to be a proper component api created
-            document.location.hash = 'start-view';
-        }
-    });
-
-    loginrequest.fail(function(data){
-        console.log('login network fail :-(');
-    });
-
-    e.preventDefault();
-});
 
 /**
  * post the user credentials to the ajax login end point
@@ -14763,5 +14870,4 @@ function postLogin($form) {
 
     return loginrequest;
 }
-
 //# sourceMappingURL=main.js.map
