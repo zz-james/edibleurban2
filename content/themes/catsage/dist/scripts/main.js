@@ -14688,8 +14688,11 @@ function InfoWindowView($el, props) {
     $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
     $display.find('.plot-content').html(plot.content.rendered);
-    $display.find('.plot-suggested-use').html(plot.map_data.properties.areatype);
-    $display.find('.plot-area-type').html(plot.map_data.properties.areatype);
+    var suggested_uses = JSON.parse(plot.suggested_uses);
+    if(suggested_uses.length) {
+      $display.find('.plot-suggested-use').html(suggested_uses.join(", "));
+    }
+    $display.find('.plot-area-type').html(plot.area_type);
   }
 
   function bindEvents() {
@@ -14841,7 +14844,7 @@ json.fail(function( jqxhr, textStatus, error ) {
 function createStore(data) {
     var plots = [];
     _.each(data, function(data){
-        plots.push( _.pick(data, ['id', 'title','content','image','area_type','map_data']) );
+        plots.push( _.pick(data, ['id', 'title','content','image','area_type','suggested_uses','map_data']) );
     });
     return plots;
 }

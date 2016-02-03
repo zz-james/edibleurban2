@@ -38,8 +38,11 @@ function InfoWindowView($el, props) {
     $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
     $display.find('.plot-content').html(plot.content.rendered);
-    $display.find('.plot-suggested-use').html(plot.area_type);
-    $display.find('.plot-area-type').html(plot.suggested_use);
+    var suggested_uses = JSON.parse(plot.suggested_uses);
+    if(suggested_uses.length) {
+      $display.find('.plot-suggested-use').html(suggested_uses.join(", "));
+    }
+    $display.find('.plot-area-type').html(plot.area_type);
   }
 
   function bindEvents() {
