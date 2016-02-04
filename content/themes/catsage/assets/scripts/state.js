@@ -6,7 +6,8 @@
  */
 var edibleUrbanApp = Redux.combineReducers({
     map: plots,
-    info_window: info_window
+    details: details,
+    editing: editing
 });
 
 /**
@@ -35,12 +36,12 @@ function plots(state, action) {
 }
 
 /**
- * reducer to manage the info_window part of the state tree
- * @param  {object} state:  the info_window part of the state tree
+ * reducer to manage the details part of the state tree
+ * @param  {object} state:  the details part of the state tree
  * @param  {object} action: action to transform the state
- * @return {object} entirely new object to replace the info_window part of the state tree
+ * @return {object} entirely new object to replace the details part of the state tree
  */
-function info_window(state, action) {
+function details(state, action) {
 
     if(typeof state === 'undefined') {
         state = {
@@ -59,6 +60,47 @@ function info_window(state, action) {
 }
 
 /**
+ * reducer to manage the editing part of the state tree
+ * @param  {object} state:  the editing part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the editing part of the state tree
+ */
+function editing(state, action) {
+
+    if(typeof state === 'undefined') {
+        state = {
+            title         : '',
+            body          : '',
+            imageId       : '',
+            coordinates   : [],
+            suggested_uses: [],
+            land_type     : ''
+        };
+    }
+
+    switch(action.type) {
+        case 'SET_TITLE_BODY':
+            return Object.assign({}, state, { title: action.title, body: action.body });
+            break;
+        case 'SET_IMAGE':
+            return Object.assign({}, state, { imageId: action.imageId });
+            break;
+        case 'SET_COORDINATES':
+            return Object.assign({}, state, { coordinates: action.coordinates });
+            break;
+        case 'SET_SUGGESTED_USES':
+            return Object.assign({}, state, { suggested_uses: action.suggested_uses });
+            break;
+        case 'SET_LAND_TYPE':
+            return Object.assign({}, state, { land_type: action.land_type });
+            break;
+        default:
+            return state
+    }
+}
+
+
+/**
  * create a Redux store from the parent edibleUrbanApp reducer
  * holding the complete state of the app.
  * its API is {subscribe, dispatch, getState}
@@ -66,9 +108,9 @@ function info_window(state, action) {
 var store = Redux.createStore(edibleUrbanApp);
 
 var renderApp = function() {
-    // console.log(store.getState());
-    infoWindow.render(store.getState().info_window);
-    map.render(store.getState().map);
+    console.log(store.getState());
+    detailsWindow.render(store.getState().details);
+    map.render(store.getState().map);   // make sure we don't re-render all the plots!
 }
 
 /**

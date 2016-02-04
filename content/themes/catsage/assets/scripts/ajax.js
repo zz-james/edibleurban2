@@ -49,3 +49,33 @@ function postLogin($form) {
 
     return loginrequest;
 }
+
+/**
+ * uploads to media endpoint in wordpress wp-api which
+ * creates a new file on the server in the media library
+ * and returns info about the file incl. full url
+ * @param  {FomrData} fd        : see https://developer.mozilla.org/en/docs/Web/API/FormData
+ * @param  {string}   filename  : string - the file name unchanged from local
+ * @return {xhrpromise}         : returns async promise for resolving in the original caller
+ */
+function uploadMedia(fd, filename) {
+
+  var upload = $.ajax({
+    url: CONFIG.api_url + 'wp/v2/media',
+    headers: {
+        'X-WP-Nonce'  : CONFIG.api_nonce,
+        'Content-Type': 'undefined',
+        'Content-Disposition': 'filename='+filename
+    },
+    type: 'POST',
+    data: fd,
+    cache: false,
+    contentType: false,
+    processData: false,
+  });
+
+  return upload;
+}
+
+
+

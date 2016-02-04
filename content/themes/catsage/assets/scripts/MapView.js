@@ -12,8 +12,8 @@ function MapView($el, props) {
       map          = L.mapbox.map('map', null, {scrollWheelZoom : false}),
 
       layerControl    = undefined, // we define these later
-      overlayGroup    = undefined;
-      drawnItemsGroup = undefined, // this becomes the editable layer
+      overlayGroup    = undefined,
+      drawnItemsGroup = undefined; // this becomes the editable layer
 
 
   /* ------------------- public methods ------------------- */
@@ -53,17 +53,27 @@ function MapView($el, props) {
     unbindEvents();
   };
 
-  /**
-   * I think we'll be coming back to this little monkey....
-   */
   this.enableDrawing = function() {
     drawnItemsGroup = new L.featureGroup();  // create a layer-group (feature group is a layer group with events + pop-ups)
     drawnItemsGroup.addTo(map);              // add the new layer-group to the map
 
     var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) ); // instance draw controls and pass the drawnitems group as the editable layer
     drawControls.addTo(map);                 // add the control to the map
-  }
+  };
 
+  this.getDrawnItemsAsCoordinates = function() {
+    var coordinates = []
+    var keys = _.keys(drawnItemsGroup._layers);
+    _.each(keys, function(key, index, list){
+      coordinates.push(normaliseLayerData(drawnItemsGroup._layers[key]._latlngs));
+    });
+    return coordinates;
+  };
+
+  // this is called on successfull ajax post of new plot
+  this.clearDrawnItems = function() {
+    drawnItemsGroup.clearLayers();
+  }
   /* ----------------- private functions ------------------ */
 
   function createBaseLayers() {
@@ -125,23 +135,22 @@ function MapView($el, props) {
      * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
      */
     map.on('draw:created', function(e){
-      var type  = e.layerType,  // they're all polygons
-          layer = e.layer;      // the layer that was just created
 
-      console.dir(layer);
-      drawnItemsGroup.addLayer(layer);
-      // we need to pop up the enter details form now.
-      // and maybe disable drawing button so only one polygon can be drawn?
+      drawnItemsGroup.addLayer(e.layer); // adding the layer to the feature group gives it an id
+
+      var type   = e.layerType,         // they're all polygons
+          layer  = e.layer,             // the layer that was just created
+          tempId = e.layer._leaflet_id;  // temp id assigned by leaflet, wordpress will give it an id when submitted
+
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'enter-details'
+      });
+
     });
 
     map.on('draw:edited', function(e){
       // nothing new is created but the details of the drawnitems layer group have changed.
-
-      console.dir(e.layers);
-        // var layers = e.layers;
-        // layers.eachLayer(function (layer) {
-        // //do whatever you want, most likely save back to db
-        // });
     });
 
     map.on('draw:deleted', function(e){
@@ -151,23 +160,37 @@ function MapView($el, props) {
 
   }
 
+  function normaliseLayerData(latlngs) {
+    var coordinates = [];
+
+    latlngs.forEach(function(element){
+        var pair = [element.lng, element.lat];
+        coordinates.push(pair);
+    });
+
+    // start and end point must match exactly so add the first point as the last
+    coordinates.push(coordinates[0]);
+
+    return coordinates;
+  }
+
   function unbindEvents() {
 
   }
 
 
   /**
- * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
- * @param  array mapdata
- */
-function renderPlots(mapdata) {
-    _.each(mapdata, function(element, index, list) {
-        element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
-        var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
-        overlayGroup[geojsonGroup].addData(element.map_data);
-        overlayGroup[geojsonGroup].addTo(map);
-    });
-}
+   * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
+   * @param  array mapdata
+   */
+  function renderPlots(mapdata) {
+      _.each(mapdata, function(element, index, list) {
+          element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
+          var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+          overlayGroup[geojsonGroup].addData(element.map_data);
+          overlayGroup[geojsonGroup].addTo(map);
+      });
+  }
 
   /**
    * factory method: create the draw controls options object
@@ -187,7 +210,8 @@ function renderPlots(mapdata) {
                   message : '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
               },
               shapeOptions : {
-                  color: '#000'
+                  color: '#000',
+                  weight:1
               },
               showArea : true
           }
@@ -197,7 +221,7 @@ function renderPlots(mapdata) {
           selectedPathOptions: {
           maintainColor: true,
           color: '#000',
-          weight: 10
+          weight: 1
         }
       }
     }
@@ -226,10 +250,6 @@ function renderPlots(mapdata) {
 
               this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
               this.infoButton.width = this.maxWidth;
-
-              // var image     = L.DomUtil.create('img', 'leaflet-buttons-into-image', this.infoButton);
-              // image.src = this.options.iconUrl;
-
               container.setAttribute('border', '1px solid red' );
 
               L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
@@ -241,7 +261,7 @@ function renderPlots(mapdata) {
           },
 
           _clicked: function(e) {
-              if(store.getState().info_window.view) {
+              if(store.getState().details.view) {
                 store.dispatch({
                     type:'SIDEBAR_VIEW',
                     view: ''

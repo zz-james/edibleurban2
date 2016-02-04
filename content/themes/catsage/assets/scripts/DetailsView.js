@@ -1,9 +1,9 @@
 /**
- * InfoBoxView view object constructor
+ * DetailsView view object constructor
  * @param {jquery} $el   [jquery object wrapping parent element of DOM fragment we're managing]
  * @param {object} props [object containing config props]
  */
-function InfoWindowView($el, props) {
+function DetailsView($el, props) {
 
   this.$el  = $el;
   var scope    = this,
@@ -17,10 +17,10 @@ function InfoWindowView($el, props) {
     bindEvents();
   }
 
-  this.render = function(infoWindow) {
-    document.location.hash = infoWindow.view ? infoWindow.view+"-view" : infoWindow.view;
-    if(infoWindow.view === 'display') {
-      populateInfoWindow(infoWindow.displayed);
+  this.render = function(details) {
+    document.location.hash = details.view ? details.view+"-view" : details.view;
+    if(details.view === 'display') {
+      populateInfoWindow(details.displayed);
     }
   };
 
@@ -33,7 +33,7 @@ function InfoWindowView($el, props) {
   /* ----------------- private functions ------------------ */
 
   function populateInfoWindow(id) {
-    var plot = _.where(store.getState().map.map_data, {id: id})[0];
+    var plot = _.where(store.getState().map.map_data, {id: id})[0];  // this does not scale.
     console.log(plot);
     $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
@@ -80,4 +80,4 @@ function InfoWindowView($el, props) {
   return this;
 }
 
-var infoWindow = new InfoWindowView($('#info_container'), {});
+var detailsWindow = new DetailsView($('#info_container'), {});

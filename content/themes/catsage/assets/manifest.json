@@ -5,7 +5,8 @@
       "files": [
         "scripts/polyfills.js",
         "scripts/MapView.js",
-        "scripts/InfoBoxView.js",
+        "scripts/DetailsView.js",
+        "scripts/EnterDetailsView.js",
         "scripts/state.js",
         "scripts/ajax.js"
       ],

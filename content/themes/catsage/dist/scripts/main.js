@@ -14402,8 +14402,8 @@ function MapView($el, props) {
       map          = L.mapbox.map('map', null, {scrollWheelZoom : false}),
 
       layerControl    = undefined, // we define these later
-      overlayGroup    = undefined;
-      drawnItemsGroup = undefined, // this becomes the editable layer
+      overlayGroup    = undefined,
+      drawnItemsGroup = undefined; // this becomes the editable layer
 
 
   /* ------------------- public methods ------------------- */
@@ -14443,17 +14443,27 @@ function MapView($el, props) {
     unbindEvents();
   };
 
-  /**
-   * I think we'll be coming back to this little monkey....
-   */
   this.enableDrawing = function() {
     drawnItemsGroup = new L.featureGroup();  // create a layer-group (feature group is a layer group with events + pop-ups)
     drawnItemsGroup.addTo(map);              // add the new layer-group to the map
 
-    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) );
-    drawControls.addTo(map);                       // add the control to the map
-  }
+    var drawControls = new L.Control.Draw( createDrawControlOptions(drawnItemsGroup) ); // instance draw controls and pass the drawnitems group as the editable layer
+    drawControls.addTo(map);                 // add the control to the map
+  };
 
+  this.getDrawnItemsAsCoordinates = function() {
+    var coordinates = []
+    var keys = _.keys(drawnItemsGroup._layers);
+    _.each(keys, function(key, index, list){
+      coordinates.push(normaliseLayerData(drawnItemsGroup._layers[key]._latlngs));
+    });
+    return coordinates;
+  };
+
+  // this is called on successfull ajax post of new plot
+  this.clearDrawnItems = function() {
+    drawnItemsGroup.clearLayers();
+  }
   /* ----------------- private functions ------------------ */
 
   function createBaseLayers() {
@@ -14515,23 +14525,43 @@ function MapView($el, props) {
      * @param  leaflet event object:e  // contains the layer with the newly drawn polygon on
      */
     map.on('draw:created', function(e){
-      var type  = e.layerType,
-          layer = e.layer;   // somehow use the leaflet id and set to 'currently edited id'
 
-      console.dir(layer);
-      drawnItemsGroup.addLayer(layer);
+      drawnItemsGroup.addLayer(e.layer); // adding the layer to the feature group gives it an id
+
+      var type   = e.layerType,         // they're all polygons
+          layer  = e.layer,             // the layer that was just created
+          tempId = e.layer._leaflet_id;  // temp id assigned by leaflet, wordpress will give it an id when submitted
+
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'enter-details'
+      });
+
     });
-    map.on('draw:editstart',function(e){
-      console.dir(e);
-    });
+
     map.on('draw:edited', function(e){
-      var type  = e.layerType,
-          layer = e.layers._layers;
-      console.dir(layer);
+      // nothing new is created but the details of the drawnitems layer group have changed.
     });
-    // draw:deleted
+
+    map.on('draw:deleted', function(e){
+      console.log(e);
+    });
 
 
+  }
+
+  function normaliseLayerData(latlngs) {
+    var coordinates = [];
+
+    latlngs.forEach(function(element){
+        var pair = [element.lng, element.lat];
+        coordinates.push(pair);
+    });
+
+    // start and end point must match exactly so add the first point as the last
+    coordinates.push(coordinates[0]);
+
+    return coordinates;
   }
 
   function unbindEvents() {
@@ -14540,17 +14570,17 @@ function MapView($el, props) {
 
 
   /**
- * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
- * @param  array mapdata
- */
-function renderPlots(mapdata) {
-    _.each(mapdata, function(element, index, list) {
-        element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
-        var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
-        overlayGroup[geojsonGroup].addData(element.map_data);
-        overlayGroup[geojsonGroup].addTo(map);
-    });
-}
+   * renders the mapdata as geojson layers on the map. each geojson layer is added to a group depending on it's land type
+   * @param  array mapdata
+   */
+  function renderPlots(mapdata) {
+      _.each(mapdata, function(element, index, list) {
+          element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
+          var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+          overlayGroup[geojsonGroup].addData(element.map_data);
+          overlayGroup[geojsonGroup].addTo(map);
+      });
+  }
 
   /**
    * factory method: create the draw controls options object
@@ -14570,7 +14600,8 @@ function renderPlots(mapdata) {
                   message : '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
               },
               shapeOptions : {
-                  color: '#000'
+                  color: '#000',
+                  weight:1
               },
               showArea : true
           }
@@ -14580,7 +14611,7 @@ function renderPlots(mapdata) {
           selectedPathOptions: {
           maintainColor: true,
           color: '#000',
-          weight: 10
+          weight: 1
         }
       }
     }
@@ -14609,10 +14640,6 @@ function renderPlots(mapdata) {
 
               this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
               this.infoButton.width = this.maxWidth;
-
-              // var image     = L.DomUtil.create('img', 'leaflet-buttons-into-image', this.infoButton);
-              // image.src = this.options.iconUrl;
-
               container.setAttribute('border', '1px solid red' );
 
               L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
@@ -14624,7 +14651,7 @@ function renderPlots(mapdata) {
           },
 
           _clicked: function(e) {
-              if(store.getState().info_window.view) {
+              if(store.getState().details.view) {
                 store.dispatch({
                     type:'SIDEBAR_VIEW',
                     view: ''
@@ -14658,11 +14685,11 @@ var map = new MapView(null, {
     startPos    : [52.57, -0.25],
 }); // we pass in null for the $el as leaflet.js will handle the DOM
 /**
- * InfoBoxView view object constructor
+ * DetailsView view object constructor
  * @param {jquery} $el   [jquery object wrapping parent element of DOM fragment we're managing]
  * @param {object} props [object containing config props]
  */
-function InfoWindowView($el, props) {
+function DetailsView($el, props) {
 
   this.$el  = $el;
   var scope    = this,
@@ -14676,10 +14703,10 @@ function InfoWindowView($el, props) {
     bindEvents();
   }
 
-  this.render = function(infoWindow) {
-    document.location.hash = infoWindow.view ? infoWindow.view+"-view" : infoWindow.view;
-    if(infoWindow.view === 'display') {
-      populateInfoWindow(infoWindow.displayed);
+  this.render = function(details) {
+    document.location.hash = details.view ? details.view+"-view" : details.view;
+    if(details.view === 'display') {
+      populateInfoWindow(details.displayed);
     }
   };
 
@@ -14692,7 +14719,7 @@ function InfoWindowView($el, props) {
   /* ----------------- private functions ------------------ */
 
   function populateInfoWindow(id) {
-    var plot = _.where(store.getState().map.map_data, {id: id})[0];
+    var plot = _.where(store.getState().map.map_data, {id: id})[0];  // this does not scale.
     console.log(plot);
     $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
@@ -14739,7 +14766,114 @@ function InfoWindowView($el, props) {
   return this;
 }
 
-var infoWindow = new InfoWindowView($('#info_container'), {});
+var detailsWindow = new DetailsView($('#info_container'), {});
+
+/**
+ * template for a simple view object
+ * @param {jquery} $el   [jquery object wrapping parent element of DOM fragment we're managing]
+ * @param {object} props [object containing config props]
+ */
+function EnterDetailsView($el, props) {
+
+  this.$el  = $el;
+  var scope = this;
+      // blah  = props.blah; // (.. etc)
+
+  /* ------------------- public methods ------------------- */
+  this.initialise = function() {
+    // you can just do stuff in the body of the function but
+    // this is callable from outside if you need
+    bindEvents();
+  }
+
+  this.render = function() {
+  };
+
+  this.hide = function() {
+    scope.$el.find('.whatever').remove();
+    unbindEvents();
+  };
+
+  /* ----------------- private functions ------------------ */
+
+  function privateMethod1() {
+
+  }
+
+  function bindEvents() {
+    $el.find("#fileupload").change(function(e){
+      createWP_FileId(e.target);
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'waiting'
+      });
+    });
+    $el.find(".add-land-type").click(function(e){
+
+      store.dispatch({
+          type:'SET_TITLE_BODY',
+          title: $el.find("#plotTitle").val(),
+          body: $el.find("#plotBody").val()
+      });
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'land-type'
+      });
+
+    });
+    $el.find(".add-suggested-use").click(function(e){
+
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'suggested-use'
+      });
+
+    });
+
+    $el.find(".save-details").click(function(e){
+
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: ''
+      });
+
+    });
+
+  }
+
+
+  function createWP_FileId(el) {
+    var file = el.files[0];
+    var fd = new FormData();
+    fd.append('file',file);
+    var xhr = uploadMedia(fd, file.name)
+    xhr.then(function(data){
+
+      store.dispatch({
+        type:'SET_IMAGE',
+        imageId: data.id
+      });
+
+      store.dispatch({
+          type:'SIDEBAR_VIEW',
+          view: 'enter-details'
+      });
+
+    });
+    xhr.fail(function(data){
+      console.log('upload failed '+data);
+    })
+  };
+
+  function unbindEvents() {
+  }
+
+  this.initialise();
+
+  return this;
+}
+
+var enterDetails = new EnterDetailsView($('#info_container'), {});
 
 
 /**
@@ -14749,7 +14883,8 @@ var infoWindow = new InfoWindowView($('#info_container'), {});
  */
 var edibleUrbanApp = Redux.combineReducers({
     map: plots,
-    info_window: info_window
+    details: details,
+    editing: editing
 });
 
 /**
@@ -14778,12 +14913,12 @@ function plots(state, action) {
 }
 
 /**
- * reducer to manage the info_window part of the state tree
- * @param  {object} state:  the info_window part of the state tree
+ * reducer to manage the details part of the state tree
+ * @param  {object} state:  the details part of the state tree
  * @param  {object} action: action to transform the state
- * @return {object} entirely new object to replace the info_window part of the state tree
+ * @return {object} entirely new object to replace the details part of the state tree
  */
-function info_window(state, action) {
+function details(state, action) {
 
     if(typeof state === 'undefined') {
         state = {
@@ -14802,6 +14937,47 @@ function info_window(state, action) {
 }
 
 /**
+ * reducer to manage the editing part of the state tree
+ * @param  {object} state:  the editing part of the state tree
+ * @param  {object} action: action to transform the state
+ * @return {object} entirely new object to replace the editing part of the state tree
+ */
+function editing(state, action) {
+
+    if(typeof state === 'undefined') {
+        state = {
+            title         : '',
+            body          : '',
+            imageId       : '',
+            coordinates   : [],
+            suggested_uses: [],
+            land_type     : ''
+        };
+    }
+
+    switch(action.type) {
+        case 'SET_TITLE_BODY':
+            return Object.assign({}, state, { title: action.title, body: action.body });
+            break;
+        case 'SET_IMAGE':
+            return Object.assign({}, state, { imageId: action.imageId });
+            break;
+        case 'SET_COORDINATES':
+            return Object.assign({}, state, { coordinates: action.coordinates });
+            break;
+        case 'SET_SUGGESTED_USES':
+            return Object.assign({}, state, { suggested_uses: action.suggested_uses });
+            break;
+        case 'SET_LAND_TYPE':
+            return Object.assign({}, state, { land_type: action.land_type });
+            break;
+        default:
+            return state
+    }
+}
+
+
+/**
  * create a Redux store from the parent edibleUrbanApp reducer
  * holding the complete state of the app.
  * its API is {subscribe, dispatch, getState}
@@ -14809,9 +14985,9 @@ function info_window(state, action) {
 var store = Redux.createStore(edibleUrbanApp);
 
 var renderApp = function() {
-    // console.log(store.getState());
-    infoWindow.render(store.getState().info_window);
-    map.render(store.getState().map);
+    console.log(store.getState());
+    detailsWindow.render(store.getState().details);
+    map.render(store.getState().map);   // make sure we don't re-render all the plots!
 }
 
 /**
@@ -14885,4 +15061,35 @@ function postLogin($form) {
 
     return loginrequest;
 }
+
+/**
+ * uploads to media endpoint in wordpress wp-api which
+ * creates a new file on the server in the media library
+ * and returns info about the file incl. full url
+ * @param  {FomrData} fd        : see https://developer.mozilla.org/en/docs/Web/API/FormData
+ * @param  {string}   filename  : string - the file name unchanged from local
+ * @return {xhrpromise}         : returns async promise for resolving in the original caller
+ */
+function uploadMedia(fd, filename) {
+
+  var upload = $.ajax({
+    url: CONFIG.api_url + 'wp/v2/media',
+    headers: {
+        'X-WP-Nonce'  : CONFIG.api_nonce,
+        'Content-Type': 'undefined',
+        'Content-Disposition': 'filename='+filename
+    },
+    type: 'POST',
+    data: fd,
+    cache: false,
+    contentType: false,
+    processData: false,
+  });
+
+  return upload;
+}
+
+
+
+
 //# sourceMappingURL=main.js.map

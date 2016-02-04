@@ -7,7 +7,7 @@ function TemplateView($el, props) {
 
   this.$el  = $el;
   var scope = this,
-      blah  = props.blah, // (.. etc)
+      blah  = props.blah; // (.. etc)
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -38,7 +38,7 @@ function TemplateView($el, props) {
   function unbindEvents() {
   }
 
-  initialise();
+  this.initialise();
 
   return this;
 }
