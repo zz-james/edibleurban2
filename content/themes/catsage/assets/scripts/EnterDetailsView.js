@@ -54,6 +54,11 @@ function EnterDetailsView($el, props) {
     $el.find(".add-suggested-use").click(function(e){
 
       store.dispatch({
+          type:'SET_LAND_TYPE',
+          land_type: $el.find('input[name=areaType]:checked', '#area-types').val()
+      });
+
+      store.dispatch({
           type:'SIDEBAR_VIEW',
           view: 'suggested-use'
       });
@@ -63,9 +68,16 @@ function EnterDetailsView($el, props) {
     $el.find(".save-details").click(function(e){
 
       store.dispatch({
+        type:'SET_SUGGESTED_USES',
+        suggested_uses: $('input:checkbox:checked', '#suggested-uses').map(function() { return this.value; }).get()
+      })
+
+      store.dispatch({
           type:'SIDEBAR_VIEW',
           view: ''
       });
+
+      console.log('now we have to save this shit to the server.');
 
     });
 

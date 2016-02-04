@@ -13,9 +13,14 @@
                     <h3><?= Titles\title(); ?></h3>
                 </div>
                 <div class="intro-text well">
-                    <p>Currently, this page features an interactive and participatory map of the potential for urban agriculture in peterborough, UK. This will son be expanded to included other cities. The purpose of the map is to collected data on land availability in cities to grow&nbsp;food. For example, mapping rooftops, tarmac, vacant lots, underused grass, land around housing. Users can also suggest an alternative food producing use for these spaces.&nbsp;Most people think there isn’t any land available in cities to grow substantial food; this map aims to prove them wrong.</p>
-                    <a  class="btn btn-info" 
-                        href="#login-view" 
+                    <p>Currently, this page features an interactive and participatory map of the potential for urban agriculture 
+                    in peterborough, UK. This will son be expanded to included other cities. The purpose of the map is to collected
+                     data on land availability in cities to grow&nbsp;food. For example, mapping rooftops, tarmac, vacant lots, 
+                     underused grass, land around housing. Users can also suggest an alternative food producing use for these 
+                     spaces.&nbsp;Most people think there isn’t any land available in cities to grow substantial food; this map 
+                     aims to prove them wrong.</p>
+                    <a  class="btn btn-info"
+                        href="#login-view"
                         onclick="store.dispatch( { type:'SIDEBAR_VIEW', view:'login' }); return false;" >
                         <span class="text"> Next</span>
                     </a>
@@ -125,7 +130,7 @@
                     <h3>Enter Plot Details</h3>
                 </div>
 
-                <form name="detailsForm"><!-- exposes to controller via name attribute -->
+                <form id="detailsForm"><!-- exposes to controller via name attribute -->
                     <div class="form-group">
                         <label for="plotTitle" class="control-label">Plot Name:</label>
                         <input
@@ -141,8 +146,7 @@
                           class="form-control"
                           style="height:100px"
                           id="plotBody"
-                          name="plotBody">
-                        </textarea>
+                          name="plotBody"></textarea>
                     </div>
 
                     <!-- file input group -->
@@ -177,7 +181,7 @@
 ?>
 
                     <div class="form-group clearfix">
-                        <form>
+                        <form id='area-types'>
                         <fieldset>
                             <?php
                             foreach($terms as $index => $term):
@@ -190,8 +194,7 @@
                                       <input
                                         type     = "radio"
                                         name     = "areaType"
-                                        value    = "<?php echo $term->slug;?>"
-                                        ng-model = "ModalController.newPlot.areaType" />
+                                        value    = "<?php echo $term->slug;?>" />
                                       <?php echo $term->name;?>
                                     </label>
                                 </div>
@@ -205,8 +208,8 @@
                         </form>
                         <!-- <button type="button" class="btn btn-default" class="back">back</button> -->
                         <button
-                            type        = "button"
-                            class       = "btn btn-primary add-suggested-use">Add Suggested Use</button>
+                            type  = "button"
+                            class = "btn btn-primary add-suggested-use">Add Suggested Use</button>
                     </div>
 
             </div>
@@ -225,7 +228,7 @@
 ?>
 
                 <div class="form-group clearfix">
-                    <form>
+                    <form id='suggested-uses'>
                     <fieldset>
 
                         <?php
@@ -239,7 +242,7 @@
                                   <input
                                     type="checkbox"
                                     name="suggestedUse"
-                                    value="<?php echo $term->slug;?>"
+                                    value="<?php echo $term->slug;?>">
                                   <?php echo $term->name;?>
                                 </label>
                             </div>
