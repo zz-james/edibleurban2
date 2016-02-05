@@ -14405,6 +14405,8 @@ function MapView($el, props) {
       overlayGroup    = undefined,
       drawnItemsGroup = undefined; // this becomes the editable layer
 
+      numPlots = 0; // we use this as a basic diff. if the number of plots to render changes we rerender, otherwise skip rendering.
+
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -14436,7 +14438,11 @@ function MapView($el, props) {
   }
 
   this.render = function(state) {
-    renderPlots(state.map_data);
+    if(numPlots !== store.getState().map.map_data.length) {
+      numPlots = store.getState().map.map_data.length;
+      console.log('rendering map');
+      renderPlots(state.map_data);
+    }
   };
 
   this.hide = function() {
@@ -14850,7 +14856,24 @@ function EnterDetailsView($el, props) {
       var xhr = saveNewPlot(store.getState().editing);
 
       xhr.then(function(data){
-        console.log('this was a success');
+
+        store.dispatch({
+            type:'SIDEBAR_VIEW',
+            view: ''
+        });
+        map.clearDrawnItems();
+        document.getElementById("detailsForm").reset();
+        document.getElementById("area-types").reset();
+        document.getElementById("suggested-uses").reset();
+
+        // add the new plot to the map
+        
+        store.dispatch({
+          type:'ADDPLOT',
+          plot:filterKeys(data)
+        });
+
+
       });
 
       xhr.fail(function(data){
@@ -14918,18 +14941,21 @@ function plots(state, action) {
 
     if(typeof state === 'undefined') {
         state = {
-            map_date: [],
-            active_layer : undefined
+            map_data: []
         };
     }
 
     switch (action.type) {
         case 'ADDPLOTS':
-            return { map_data : action.plots, active_layer : state.active_layer }
+            return { map_data : action.plots }
+            break;
+        case 'ADDPLOT':
+            return { map_data : state.map_data.concat(action.plot) }
             break;
         default:
             return state;
     }
+
 }
 
 /**
@@ -15052,9 +15078,13 @@ json.fail(function( jqxhr, textStatus, error ) {
 function createStore(data) {
     var plots = [];
     _.each(data, function(data){
-        plots.push( _.pick(data, ['id', 'title','content','image','area_type','suggested_uses','map_data']) );
+        plots.push( filterKeys(data) );
     });
     return plots;
+}
+
+function filterKeys(data) {
+  return _.pick(data, ['id', 'title','content','image','area_type','suggested_uses','map_data'])
 }
 
 /**

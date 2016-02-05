@@ -15,6 +15,8 @@ function MapView($el, props) {
       overlayGroup    = undefined,
       drawnItemsGroup = undefined; // this becomes the editable layer
 
+      numPlots = 0; // we use this as a basic diff. if the number of plots to render changes we rerender, otherwise skip rendering.
+
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -46,7 +48,11 @@ function MapView($el, props) {
   }
 
   this.render = function(state) {
-    renderPlots(state.map_data);
+    if(numPlots !== store.getState().map.map_data.length) {
+      numPlots = store.getState().map.map_data.length;
+      console.log('rendering map');
+      renderPlots(state.map_data);
+    }
   };
 
   this.hide = function() {

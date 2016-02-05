@@ -20,9 +20,13 @@ json.fail(function( jqxhr, textStatus, error ) {
 function createStore(data) {
     var plots = [];
     _.each(data, function(data){
-        plots.push( _.pick(data, ['id', 'title','content','image','area_type','suggested_uses','map_data']) );
+        plots.push( filterKeys(data) );
     });
     return plots;
+}
+
+function filterKeys(data) {
+  return _.pick(data, ['id', 'title','content','image','area_type','suggested_uses','map_data'])
 }
 
 /**

@@ -80,7 +80,24 @@ function EnterDetailsView($el, props) {
       var xhr = saveNewPlot(store.getState().editing);
 
       xhr.then(function(data){
-        console.log('this was a success');
+
+        store.dispatch({
+            type:'SIDEBAR_VIEW',
+            view: ''
+        });
+        map.clearDrawnItems();
+        document.getElementById("detailsForm").reset();
+        document.getElementById("area-types").reset();
+        document.getElementById("suggested-uses").reset();
+
+        // add the new plot to the map
+        
+        store.dispatch({
+          type:'ADDPLOT',
+          plot:filterKeys(data)
+        });
+
+
       });
 
       xhr.fail(function(data){

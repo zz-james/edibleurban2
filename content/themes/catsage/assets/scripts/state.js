@@ -21,18 +21,21 @@ function plots(state, action) {
 
     if(typeof state === 'undefined') {
         state = {
-            map_date: [],
-            active_layer : undefined
+            map_data: []
         };
     }
 
     switch (action.type) {
         case 'ADDPLOTS':
-            return { map_data : action.plots, active_layer : state.active_layer }
+            return { map_data : action.plots }
+            break;
+        case 'ADDPLOT':
+            return { map_data : state.map_data.concat(action.plot) }
             break;
         default:
             return state;
     }
+
 }
 
 /**
