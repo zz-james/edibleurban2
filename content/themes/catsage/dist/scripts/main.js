@@ -14840,14 +14840,22 @@ function EnterDetailsView($el, props) {
       store.dispatch({
         type:'SET_SUGGESTED_USES',
         suggested_uses: $('input:checkbox:checked', '#suggested-uses').map(function() { return this.value; }).get()
-      })
+      });
 
       store.dispatch({
           type:'SIDEBAR_VIEW',
-          view: ''
+          view: 'waiting'
       });
 
-      console.log('now we have to save this shit to the server.');
+      var xhr = saveNewPlot(store.getState().editing);
+
+      xhr.then(function(data){
+        console.log('this was a success');
+      });
+
+      xhr.fail(function(data){
+        console.log('this failed');
+      });
 
     });
 
@@ -15102,6 +15110,47 @@ function uploadMedia(fd, filename) {
 }
 
 
+/**
+ * this is shit and we have to sort it out but we'll do it tomorrow probably.
+ * @param  {[type]} newPlot [description]
+ * @return {[type]}         [description]
+ */
+function saveNewPlot(newPlot) {
+  var payload = {};
+  payload.suggested_uses = (newPlot.suggested_uses).join();
+  payload.area_type = newPlot.land_type;
+  payload.content = newPlot.body;
+  payload.excerpt = '';
+  payload.image = newPlot.imageId;
+  payload.title = newPlot.title;
+  payload.geo_json = makeFeatureObject(newPlot);
+
+  var post = $.ajax({
+    url: CONFIG.api_url+'edible_urban/v2/plots',
+    headers: {
+        'X-WP-Nonce'  : CONFIG.api_nonce
+    },
+    type: 'POST',
+    dataType: 'json',
+    data: payload
+  });
+  return post;
+}
+
+function makeFeatureObject(data) {
+  var obj = {};
+  obj.type = "Feature",
+  obj.geometry = {
+    type: "Polygon",
+    coordinates : map.getDrawnItemsAsCoordinates()
+  },
+  obj.properties = {
+    name:data.title,
+    body:data.body,
+    areatype:data.land_type
+  }
+  return JSON.stringify(obj);
+}
 
 
 //# sourceMappingURL=main.js.map

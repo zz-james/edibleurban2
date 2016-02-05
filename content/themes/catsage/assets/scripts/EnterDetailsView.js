@@ -70,14 +70,22 @@ function EnterDetailsView($el, props) {
       store.dispatch({
         type:'SET_SUGGESTED_USES',
         suggested_uses: $('input:checkbox:checked', '#suggested-uses').map(function() { return this.value; }).get()
-      })
+      });
 
       store.dispatch({
           type:'SIDEBAR_VIEW',
-          view: ''
+          view: 'waiting'
       });
 
-      console.log('now we have to save this shit to the server.');
+      var xhr = saveNewPlot(store.getState().editing);
+
+      xhr.then(function(data){
+        console.log('this was a success');
+      });
+
+      xhr.fail(function(data){
+        console.log('this failed');
+      });
 
     });
 

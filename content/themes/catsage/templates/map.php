@@ -194,7 +194,7 @@
                                       <input
                                         type     = "radio"
                                         name     = "areaType"
-                                        value    = "<?php echo $term->slug;?>" />
+                                        value    = "<?php echo $term->name;?>" />
                                       <?php echo $term->name;?>
                                     </label>
                                 </div>
@@ -242,7 +242,7 @@
                                   <input
                                     type="checkbox"
                                     name="suggestedUse"
-                                    value="<?php echo $term->slug;?>">
+                                    value="<?php echo $term->name;?>">
                                   <?php echo $term->name;?>
                                 </label>
                             </div>
@@ -263,7 +263,7 @@
 
 <!-- waiting view -->
 
-        <div id="waiting-view" style="width: 0px">
+        <div id="waiting-view">
             spinning throbber goes here
         </div>
 
