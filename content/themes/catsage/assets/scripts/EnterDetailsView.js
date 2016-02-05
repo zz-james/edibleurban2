@@ -20,7 +20,6 @@ function EnterDetailsView($el, props) {
   };
 
   this.hide = function() {
-    scope.$el.find('.whatever').remove();
     unbindEvents();
   };
 

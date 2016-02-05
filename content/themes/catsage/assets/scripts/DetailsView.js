@@ -34,7 +34,6 @@ function DetailsView($el, props) {
 
   function populateInfoWindow(id) {
     var plot = _.where(store.getState().map.map_data, {id: id})[0];  // this does not scale.
-    console.log(plot);
     $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
     $display.find('.plot-content').html(plot.content.rendered);
@@ -55,6 +54,7 @@ function DetailsView($el, props) {
         loginrequest.done(function(data){
             if(data.loggedin == true) {
                 CONFIG.logged_in = true;
+                CONFIG.api_nonce = data.wp_rest_nonce,
                 map.enableDrawing();
                 store.dispatch({
                     type:'SIDEBAR_VIEW',

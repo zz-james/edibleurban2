@@ -111,7 +111,6 @@ function editing(state, action) {
 var store = Redux.createStore(edibleUrbanApp);
 
 var renderApp = function() {
-    console.log(store.getState());
     detailsWindow.render(store.getState().details);
     map.render(store.getState().map);   // make sure we don't re-render all the plots!
 }
