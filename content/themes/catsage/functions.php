@@ -27,3 +27,19 @@ foreach ($sage_includes as $file) {
   require_once $filepath;
 }
 unset($file, $filepath);
+
+
+
+//  // set action to get the cookie data
+// function setCookieContents($logged_in_cookie)
+// {
+//     $cookieContents = array(
+//         'logged_in_cookie'  =>  $logged_in_cookie,
+//         'expire'            =>  $expire,
+//         'expiration'        =>  $expiration,
+//         'user_id'           =>  $user_id
+//     );
+//     print_r($_COOKIE);   //md5( $_SERVER['SERVER_NAME'] ) );
+//     print_r($logged_in_cookie);
+// }
+// add_action('set_logged_in_cookie', 'setCookieContents');

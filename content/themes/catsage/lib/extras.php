@@ -44,6 +44,8 @@ function ajax_login() {
   $info['user_password'] = $_POST['password'];
   $info['remember']      = $_POST['remember'];
 
+
+
   $user_signon = wp_signon( $info, false );
 
   if( is_wp_error( $user_signon )) {
@@ -54,5 +56,14 @@ function ajax_login() {
   die();
 }
 add_action( 'wp_ajax_nopriv_ajaxlogin', __NAMESPACE__ . '\\ajax_login' );
+
+
+
+
+
+// do_action('set_logged_in_cookie', $logged_in_cookie, $expire, $expiration, $user_id, 'logged_in');
+
+
+
 
 

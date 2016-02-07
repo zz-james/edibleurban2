@@ -51,16 +51,16 @@ function DetailsView($el, props) {
         $elem.find('p.status').text('Sending user info, please wait...');
         var loginrequest = postLogin($elem);
 
-        loginrequest.done(function(data){
-            if(data.loggedin == true) {
-                CONFIG.logged_in = true;
-                CONFIG.api_nonce = data.wp_rest_nonce,
-                map.enableDrawing();
-                store.dispatch({
-                    type:'SIDEBAR_VIEW',
-                    view: 'start'
-                });
-            }
+        loginrequest.done(function(data, textStatus, request){
+            window.location.reload(false); 
+            // if(data.loggedin == true) {
+            //     CONFIG.logged_in = true;
+            //     map.enableDrawing();
+            //     store.dispatch({
+            //         type:'SIDEBAR_VIEW',
+            //         view: 'start'
+            //     });
+            // }
         });
 
         loginrequest.fail(function(data){
