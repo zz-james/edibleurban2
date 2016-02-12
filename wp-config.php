@@ -27,7 +27,7 @@ if (!defined('DB_USER')) {
 	define('DB_USER', 'mapteste_leaflet');
 }
 if (!defined('DB_PASSWORD')) {
-	define('DB_PASSWORD', 'cr1m3&pun15hm3nt');
+	define('DB_PASSWORD', 'cr1m3&pun15hm3n+');
 }
 if (!defined('DB_HOST')) {
 	define('DB_HOST', '10.169.0.29');
