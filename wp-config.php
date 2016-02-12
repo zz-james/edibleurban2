@@ -21,16 +21,16 @@ if (file_exists(dirname(__FILE__) . '/local-config.php')) {
 
 // Global DB config
 if (!defined('DB_NAME')) {
-	define('DB_NAME', 'edibleurban');
+	define('DB_NAME', 'mapteste_leaflet');
 }
 if (!defined('DB_USER')) {
-	define('DB_USER', 'root');
+	define('DB_USER', 'mapteste_leaflet');
 }
 if (!defined('DB_PASSWORD')) {
-	define('DB_PASSWORD', 'cat');
+	define('DB_PASSWORD', 'cr1m3&pun15hm3nt');
 }
 if (!defined('DB_HOST')) {
-	define('DB_HOST', 'localhost');
+	define('DB_HOST', '10.169.0.29');
 }
 
 /** Database Charset to use in creating database tables. */
