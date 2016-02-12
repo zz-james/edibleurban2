@@ -159,13 +159,14 @@
                     <fieldset>
                       <legend>Area Types:</legend>
                       <div class="form-group">
-                        <select name="areaType">
+                        <select id="areaType" name="areaType">
                         <!-- loop to print the terms -->
                         <?php $terms = get_terms( "area-type", array( 'hide_empty' => 0 ) ); ?><!-- radio buttons for land type -->
+                            <option value="Unknown">None Selected</option>
                         <?php foreach($terms as $index => $term): ?>
                             <option value="<?php echo $term->name;?>"><?php echo $term->name;?></option>
                         <?php endforeach; ?>
-                        <!-- loop to print the terms -->
+                        <!-- end loop to print the terms -->
                         </select>
                       </div>
                     </fieldset>
@@ -173,24 +174,14 @@
                     <fieldset>
                       <legend>Suggested Uses:</legend>
                       <div class="form-group">
-
-<!-- <div class="checkbox">
-    <label>
-      <input
-        type="checkbox"
-        name="suggestedUse"
-        value="<?php echo $term->name;?>">
-      <?php echo $term->name;?>
-    </label>
-</div> -->
                         <select id="suggestedUse" name="suggestedUse" multiple="multiple">
                         <!-- loop to print the terms -->
                         <?php $terms = get_terms( "suggested-use", array( 'hide_empty' => 0 ) ); ?> <!-- checkboxes for suggested use -->
                         <?php foreach($terms as $index => $term): ?>
                            <option value="<?php echo $term->name;?>"><?php echo $term->name;?></option>
                         <?php endforeach; ?>
+                        <!-- end loop to print the terms -->
                         </select>
-                        <!-- loop to print the terms -->
                       </div>
                     </fieldset>
                 </form>
@@ -200,26 +191,6 @@
                     class = "btn btn-primary save-details">Save Details</button>
             </div>
         </div><!-- close #enter-details-view -->
-
-<!-- enter land type view -->
-
-        <div id="land-type-view">
-            <div>
-                <div>
-                    <h3>Land Type</h3>
-                </div>
-            </div>
-        </div>
-
-<!-- enter suggested use view -->
-
-        <div id="suggested-use-view">
-            <div>
-                <div>
-                    <h3>Suggested Use</h3>
-                </div>
-            </div>
-        </div>
 
 <!-- waiting view -->
 
