@@ -7,7 +7,8 @@ function EnterDetailsView($el, props) {
 
   this.$el  = $el;
   var scope = this;
-      // blah  = props.blah; // (.. etc)
+  //Initialize the plugin
+  $el.find('#suggestedUse').multiselect();  // jquery plug in initialisation
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {
@@ -37,38 +38,23 @@ function EnterDetailsView($el, props) {
           view: 'waiting'
       });
     });
-    $el.find(".add-land-type").click(function(e){
+
+    $el.find(".save-details").click(function(e){
 
       store.dispatch({
           type:'SET_TITLE_BODY',
           title: $el.find("#plotTitle").val(),
           body: $el.find("#plotBody").val()
       });
-      store.dispatch({
-          type:'SIDEBAR_VIEW',
-          view: 'land-type'
-      });
-
-    });
-    $el.find(".add-suggested-use").click(function(e){
 
       store.dispatch({
           type:'SET_LAND_TYPE',
-          land_type: $el.find('input[name=areaType]:checked', '#area-types').val()
+          land_type: $el.find('#areaType').val()
       });
-
-      store.dispatch({
-          type:'SIDEBAR_VIEW',
-          view: 'suggested-use'
-      });
-
-    });
-
-    $el.find(".save-details").click(function(e){
 
       store.dispatch({
         type:'SET_SUGGESTED_USES',
-        suggested_uses: $('input:checkbox:checked', '#suggested-uses').map(function() { return this.value; }).get()
+        suggested_uses: $('option:selected', '#suggestedUse').map(function() { return this.value; }).get()
       });
 
       store.dispatch({
@@ -86,11 +72,15 @@ function EnterDetailsView($el, props) {
         });
         map.clearDrawnItems();
         document.getElementById("detailsForm").reset();
-        document.getElementById("area-types").reset();
-        document.getElementById("suggested-uses").reset();
+
+        $('#suggestedUse option:selected').each(function() {
+            $(this).prop('selected', false);
+        })
+
+        $('#suggestedUse').multiselect('refresh');
+
 
         // add the new plot to the map
-        
         store.dispatch({
           type:'ADDPLOT',
           plot:filterKeys(data)
