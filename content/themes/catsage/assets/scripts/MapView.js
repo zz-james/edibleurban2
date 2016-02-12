@@ -298,5 +298,5 @@ function MapView($el, props) {
 
 var map = new MapView(null, {
     accessToken : 'pk.eyJ1Ijoic2FmZXR5Y2F0IiwiYSI6Ill4U0t4Q1kifQ.24VprC0A7MUNYs5HbhLAAg', // access token for mapbox
-    startPos    : [52.57, -0.25],
+    startPos    : [32.778524, -96.795305],
 }); // we pass in null for the $el as leaflet.js will handle the DOM
