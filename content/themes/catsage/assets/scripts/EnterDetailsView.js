@@ -7,7 +7,8 @@ function EnterDetailsView($el, props) {
 
   this.$el  = $el;
   var scope = this;
-      // blah  = props.blah; // (.. etc)
+  //Initialize the plugin
+  $el.find('#suggestedUse').multiselect();  // jquery plug in initialisation
 
   /* ------------------- public methods ------------------- */
   this.initialise = function() {

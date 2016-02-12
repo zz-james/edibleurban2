@@ -126,46 +126,80 @@
 
         <div id="enter-details-view">
             <div>
-                <div>
-                    <h3>Enter Plot Details</h3>
-                </div>
-
                 <form id="detailsForm"><!-- exposes to controller via name attribute -->
-                    <div class="form-group">
-                        <label for="plotTitle" class="control-label">Plot Name:</label>
-                        <input
-                          type        = "text"
-                          class       = "form-control"
-                          id          = "plotTitle"
-                          name        = "plotTitle">
-                    </div>
+                    <fieldset>
+                        <legend>Enter Plot Details:</legend>
+                        <div class="form-group">
+                            <label for="plotTitle" class="control-label">Plot Name:</label>
+                            <input
+                              type        = "text"
+                              class       = "form-control"
+                              id          = "plotTitle"
+                              name        = "plotTitle">
+                        </div>
 
-                    <div class="form-group">
-                        <label for="plotBody" class="control-label">Plot Details:</label>
-                        <textarea
-                          class="form-control"
-                          style="height:100px"
-                          id="plotBody"
-                          name="plotBody"></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label for="plotBody" class="control-label">Plot Details:</label>
+                            <textarea
+                              class="form-control"
+                              style="height:100px"
+                              id="plotBody"
+                              name="plotBody"></textarea>
+                        </div>
 
-                    <!-- file input group -->
-                    <label for="fileupload" class="control-label">Image (not required):</label>
-                    <div class="input-group">
-                        <span class="input-group-btn">
-                            <span class="btn btn-primary btn-file">
-                                Browse&hellip; <input type="file" multiple id="fileupload" name="fileupload">
+                        <!-- file input group -->
+                        <label for="fileupload" class="control-label">Image (not required):</label>
+                        <div class="input-group">
+                            <span class="input-group-btn">
+                                <input type="file" multiple id="fileupload" name="fileupload">
                             </span>
-                        </span>
-                    </div>
-                </form>
-                <!-- <button type="button" class="btn btn-default" class="cancel">Cancel</button> -->
-                <button
-                    type        = "button"
-                    class       = "btn btn-primary add-land-type">Add Land Type</button>
+                        </div>
+                    </fieldset>
+                    <br />
+                    <fieldset>
+                      <legend>Area Types:</legend>
+                      <div class="form-group">
+                        <select name="areaType">
+                        <!-- loop to print the terms -->
+                        <?php $terms = get_terms( "area-type", array( 'hide_empty' => 0 ) ); ?><!-- radio buttons for land type -->
+                        <?php foreach($terms as $index => $term): ?>
+                            <option value="<?php echo $term->name;?>"><?php echo $term->name;?></option>
+                        <?php endforeach; ?>
+                        <!-- loop to print the terms -->
+                        </select>
+                      </div>
+                    </fieldset>
+                    <br />
+                    <fieldset>
+                      <legend>Suggested Uses:</legend>
+                      <div class="form-group">
 
+<!-- <div class="checkbox">
+    <label>
+      <input
+        type="checkbox"
+        name="suggestedUse"
+        value="<?php echo $term->name;?>">
+      <?php echo $term->name;?>
+    </label>
+</div> -->
+                        <select id="suggestedUse" name="suggestedUse" multiple="multiple">
+                        <!-- loop to print the terms -->
+                        <?php $terms = get_terms( "suggested-use", array( 'hide_empty' => 0 ) ); ?> <!-- checkboxes for suggested use -->
+                        <?php foreach($terms as $index => $term): ?>
+                           <option value="<?php echo $term->name;?>"><?php echo $term->name;?></option>
+                        <?php endforeach; ?>
+                        </select>
+                        <!-- loop to print the terms -->
+                      </div>
+                    </fieldset>
+                </form>
+
+                <button
+                    type  = "button"
+                    class = "btn btn-primary save-details">Save Details</button>
             </div>
-        </div>
+        </div><!-- close #enter-details-view -->
 
 <!-- enter land type view -->
 
@@ -174,44 +208,6 @@
                 <div>
                     <h3>Land Type</h3>
                 </div>
-
-<!-- radio buttons for land type -->
-<?php
-  $terms = get_terms( "area-type", array( 'hide_empty' => 0 ) );
-?>
-
-                    <div class="form-group clearfix">
-                        <form id='area-types'>
-                        <fieldset>
-                            <?php
-                            foreach($terms as $index => $term):
-                            ?>
-
-                              <div class=""><!-- some kind of column mixin class ? -->
-
-                                <div class="radio">
-                                    <label>
-                                      <input
-                                        type     = "radio"
-                                        name     = "areaType"
-                                        value    = "<?php echo $term->name;?>" />
-                                      <?php echo $term->name;?>
-                                    </label>
-                                </div>
-
-                              </div>
-                            <?php
-                            endforeach;
-                            ?>
-
-                        </fieldset>
-                        </form>
-                        <!-- <button type="button" class="btn btn-default" class="back">back</button> -->
-                        <button
-                            type  = "button"
-                            class = "btn btn-primary add-suggested-use">Add Suggested Use</button>
-                    </div>
-
             </div>
         </div>
 
@@ -222,49 +218,13 @@
                 <div>
                     <h3>Suggested Use</h3>
                 </div>
-<!-- checkboxes for suggested use -->
-<?php
-  $terms = get_terms( "suggested-use", array( 'hide_empty' => 0 ) );
-?>
-
-                <div class="form-group clearfix">
-                    <form id='suggested-uses'>
-                    <fieldset>
-
-                        <?php
-                        foreach($terms as $index => $term):
-                        ?>
-
-                          <div class=""><!-- some kind of column mixin class ? -->
-
-                            <div class="checkbox">
-                                <label>
-                                  <input
-                                    type="checkbox"
-                                    name="suggestedUse"
-                                    value="<?php echo $term->name;?>">
-                                  <?php echo $term->name;?>
-                                </label>
-                            </div>
-                          </div>
-                        <?php
-                        endforeach;
-                        ?>
-                    </fieldset>
-                    </form>
-                    <!-- <button type="button" class="btn btn-default" class="back">back</button> -->
-                    <button
-                        type        = "button"
-                        class       = "btn btn-primary save-details">Save Details</button>
-                </div>
-
             </div>
         </div>
 
 <!-- waiting view -->
 
         <div id="waiting-view">
-            spinning throbber goes here
+            <img src="https://i.imgur.com/HmzkFcx.gif" />
         </div>
 
 <!-- empty view -->
