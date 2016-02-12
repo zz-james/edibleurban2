@@ -12,7 +12,7 @@
     api_nonce    : "<?php echo wp_create_nonce('wp_rest'); ?>",
     template_url : "<?php echo get_bloginfo('template_directory'); ?>",
     logged_in    : "<?php echo is_user_logged_in(); ?>",
-    suggested_use: {'Green Space'    : '#96c25d', 'Indoor Space' : '#d28cba', 'Pavement or pedestrian area' : '#eac1c0', 'Public Space' : '#eaaf24', 'Rooftop' : '#aedce7', 'Tarmac' : '#f4cda3', 'Vacant Land' : '#858e93', 'Unknown' : '#000000' }
+    suggested_use: {'Green Space'    : '#96c25d', 'Indoor Space' : '#d28cba', 'Pedestrian area' : '#eac1c0', 'Public Space' : '#eaaf24', 'Rooftop' : '#aedce7', 'Tarmac' : '#f4cda3', 'Vacant Land' : '#858e93', 'Unknown' : '#000000' }
   };
 
   </script>
