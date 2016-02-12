@@ -30,7 +30,7 @@
         }
     }
     .navbar-nav{
-    
+
         @include font-helv();
         li a {
             color: $dark;

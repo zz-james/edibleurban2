@@ -269,7 +269,7 @@
 
 <!-- empty view -->
 
-        <div id="empty-view" style="width: 0px">
+        <div id="empty-view">
             <!-- hides the side bar -->
         </div>
     </div>

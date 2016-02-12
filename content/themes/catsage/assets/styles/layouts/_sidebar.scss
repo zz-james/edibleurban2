@@ -13,6 +13,16 @@
     animation: fade-in 0.5s linear 1;
 }
 
+#info_container > *:last-child {
+    display: block;
+    width: 250px;
+}
+
+#info_container > *:target ~ * {
+    display: none;
+}
+
+
 .login label {
     color: #777;
     font-size: 14px;
