@@ -1,6 +1,22 @@
+.container-fluid {
+    height: 100%
+}
+
+
+main {
+    height: 100%;
+}
+
+.content {
+    height: 100%;
+}
+
+
+
 .flex_container {
     display: flex;
     flex-flow: wrap;
+    height: 100%
 }
 
 #info_container {
@@ -9,12 +25,18 @@
 
 #map_container {
     flex: 1 1 auto;
+    height: 100%;
 }
 
 #info_container > div {
     height: 512px;
     padding-left: 3px;
 }
+
+#map {
+    height: 100%;
+}
+
 
 .leaflet-buttons-info-button {
     overflow: hidden;

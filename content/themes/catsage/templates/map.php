@@ -277,7 +277,7 @@
 
 <!-- map -->
     <div id="map_container">
-        <div id="map" style="height: 512px"></div>
+        <div id="map"></div>
     </div>
 
 
