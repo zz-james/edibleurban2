@@ -67,15 +67,14 @@ function uploadMedia(fd, filename) {
   var upload = $.ajax({
     url: CONFIG.api_url + 'wp/v2/media',
     headers: {
-        'X-WP-Nonce'  : CONFIG.api_nonce,
-        'Content-Type': 'undefined',
-        'Content-Disposition': 'filename='+filename
+        'X-WP-Nonce'          : CONFIG.api_nonce,
+        'Content-Disposition' : 'filename='+filename
     },
-    type: 'POST',
-    data: fd,
-    cache: false,
-    contentType: false,
-    processData: false,
+    type        : 'POST',
+    data        : fd,
+    cache       : false,
+    contentType : false,
+    processData : false,
   });
 
   return upload;
@@ -90,11 +89,11 @@ function uploadMedia(fd, filename) {
 function saveNewPlot(newPlot) {
   var payload = {};
   payload.suggested_uses = (newPlot.suggested_uses).join();
-  payload.area_type = newPlot.land_type;
-  payload.content = newPlot.body;
-  payload.excerpt = '';
-  payload.image = newPlot.imageId;
-  payload.title = newPlot.title;
+  payload.area_type      = newPlot.land_type;
+  payload.content        = newPlot.body;
+  payload.excerpt        = '';
+  payload.image          = newPlot.imageId;
+  payload.title          = newPlot.title;
   payload.geo_json = makeFeatureObject(newPlot);
 
   var post = $.ajax({

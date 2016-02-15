@@ -26,11 +26,8 @@ function EnterDetailsView($el, props) {
 
   /* ----------------- private functions ------------------ */
 
-  function privateMethod1() {
-
-  }
-
   function bindEvents() {
+    
     $el.find("#fileupload").change(function(e){
       createWP_FileId(e.target);
       store.dispatch({
