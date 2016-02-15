@@ -193,6 +193,7 @@ function MapView($el, props) {
       _.each(mapdata, function(element, index, list) {
           element.map_data.id = element.id; // copy in the post id into the properties so they are added to the layer data
           var geojsonGroup = element.area_type ? element.area_type.replace(/ /g,"_") : 'Unknown';
+          console.log(geojsonGroup);
           overlayGroup[geojsonGroup].addData(element.map_data);
           overlayGroup[geojsonGroup].addTo(map);
       });
