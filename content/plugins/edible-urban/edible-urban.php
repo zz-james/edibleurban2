@@ -321,7 +321,7 @@ class EdibleUrban_API_Plot extends WP_REST_Posts_Controller  {
         $response = $this->get_item( $get_request );
         $response = rest_ensure_response( $response );
         $response->set_status( 201 );
-        $response->header( 'Location', rest_url( '/wp/v2/' . $this->get_post_type_base( $post->post_type ) . '/' . $post_id ) );
+        $response->header( 'Location', rest_url( sprintf( '/%s/%s/%d', $this->namespace, $this->rest_base, $post_id ) ) );
 
         return $response;
 
