@@ -4,6 +4,7 @@
     "main.js": {
       "files": [
         "scripts/polyfills.js",
+        "scripts/bootstrap-multiselect.js",
         "scripts/MapView.js",
         "scripts/DetailsView.js",
         "scripts/EnterDetailsView.js",
