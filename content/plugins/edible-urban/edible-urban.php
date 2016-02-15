@@ -223,7 +223,7 @@ function get_areatype( $object, $field_name, $request ) {
 
 function get_postimageurl( $object, $field_name, $request ) {
     if( has_post_thumbnail( $object[ 'id' ] ) ) {
-        $thumb = wp_get_attachment_image_src( $object[ 'featured_image' ] );
+        $thumb = wp_get_attachment_image_src( $object[ 'featured_media' ] );
         return $thumb[0]; // we only allow one image
     }
 }
