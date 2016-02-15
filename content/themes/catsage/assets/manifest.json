@@ -3,6 +3,7 @@
 
     "main.js": {
       "files": [
+        "scripts/Control.OSMGeocoder.js",
         "scripts/polyfills.js",
         "scripts/bootstrap-multiselect.js",
         "scripts/MapView.js",
