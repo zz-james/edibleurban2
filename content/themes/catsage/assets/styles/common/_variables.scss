@@ -1,6 +1,7 @@
 // Glyphicons font path
 $icon-font-path:        "../fonts/";
 // FONTS
+@import url(https://fonts.googleapis.com/css?family=Fredericka+the+Great&text=EdibleUrban);
 
 @mixin font-helv() {
     font-family: 'Helvetica Neue', Helvetica,'liberation_sansregular', Arial, sans-serif;
