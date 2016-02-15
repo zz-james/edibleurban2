@@ -83,7 +83,7 @@ function MapView($el, props) {
   /* ----------------- private functions ------------------ */
 
   function createBaseLayers() {
-    var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.o2ii1n61/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
+    var baseMapLayer   = L.tileLayer('https://{s}.tiles.mapbox.com/v4/safetycat.5d749acb/{z}/{x}/{y}.png?access_token='+L.mapbox.accessToken, {reuseTiles : true});
     var satelliteLayer = L.mapbox.tileLayer('mapbox.satellite', {reuseTiles : true});
     return {
         Map       : baseMapLayer,
