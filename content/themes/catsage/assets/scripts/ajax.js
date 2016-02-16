@@ -1,6 +1,17 @@
 var json = $.getJSON(CONFIG.api_url+'wp/v2/plots/?filter[posts_per_page]=-1');
 
+store.dispatch({
+    type:'SIDEBAR_VIEW',
+    view: 'waiting'
+});
+
 json.done(function(data){
+
+    store.dispatch({
+        type:'SIDEBAR_VIEW',
+        view: ''
+    });
+
     store.dispatch({
         type:'ADDPLOTS',
         plots:createStore(data)
