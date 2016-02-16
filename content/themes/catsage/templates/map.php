@@ -196,6 +196,7 @@
 
         <div id="waiting-view">
             <img src="https://i.imgur.com/HmzkFcx.gif" />
+            <center>Please Wait...</center>
         </div>
 
 <!-- empty view -->
