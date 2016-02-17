@@ -23,6 +23,10 @@ function MapView($el, props) {
     L.mapbox.accessToken = accessToken;
     map.setView(startPos, 15);
 
+    // instance opengis search plugin
+    var osmGeocoder = new L.Control.OSMGeocoder();
+    map.addControl(osmGeocoder);
+
     // layer initialisations
     var baseLayers = createBaseLayers(); // object that holds base layers {name:tilelayer}
     baseLayers.Map.addTo(map);           // add the base Map layer as default layer
