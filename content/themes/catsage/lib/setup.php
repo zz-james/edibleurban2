@@ -98,6 +98,8 @@ function assets() {
   wp_enqueue_style('leaflet', 'http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css', false, null);
   wp_enqueue_style('leaflet-draw', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css', false, null);
   wp_enqueue_style('mapbox', 'https://api.mapbox.com/mapbox.js/v2.2.3/mapbox.css', false, null);
+  wp_enqueue_style('locate', 'https://api.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.mapbox.css', false, null);
+  wp_enqueue_style('fontawesome', 'https://api.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/css/font-awesome.min.css', false, null);
   wp_enqueue_style('sage/css', Assets\asset_path('styles/main.css'), false, null);
 
   if (is_single() && comments_open() && get_option('thread_comments')) {
@@ -140,9 +142,16 @@ function leafletScripts() {
         true
     );
     wp_enqueue_script(
+        'LeafletLocate',
+        '//api.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.min.js',
+        array( 'LeafletDraw' ),
+        null,
+        true
+    );
+    wp_enqueue_script(
         'main',
         Assets\asset_path('scripts/main.js'),
-        array('LeafletDraw'),
+        array('LeafletLocate'),
         null,
         true
     );
