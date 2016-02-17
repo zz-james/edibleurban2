@@ -27,6 +27,9 @@ function MapView($el, props) {
     var osmGeocoder = new L.Control.OSMGeocoder();
     map.addControl(osmGeocoder);
 
+    // located yourself control
+    L.control.locate().addTo(map);
+
     // layer initialisations
     var baseLayers = createBaseLayers(); // object that holds base layers {name:tilelayer}
     baseLayers.Map.addTo(map);           // add the base Map layer as default layer
