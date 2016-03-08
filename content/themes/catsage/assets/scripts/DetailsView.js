@@ -34,7 +34,11 @@ function DetailsView($el, props) {
 
   function populateInfoWindow(id) {
     var plot = _.where(store.getState().map.map_data, {id: id})[0];  // this does not scale.
-    $display.find('.plot-image').attr("src", plot.image);
+    if(plot.image === null){
+      console.log('get the image from google');
+    } else {
+      $display.find('.plot-image').attr("src", plot.image);
+    }
     $display.find('.plot-title').html(plot.title.rendered);
     $display.find('.plot-content').html(plot.content.rendered);
     var suggested_uses = JSON.parse(plot.suggested_uses);
