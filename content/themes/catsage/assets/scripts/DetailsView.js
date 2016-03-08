@@ -35,10 +35,14 @@ function DetailsView($el, props) {
   function populateInfoWindow(id) {
     var plot = _.where(store.getState().map.map_data, {id: id})[0];  // this does not scale.
     if(plot.image === null){
-      console.log('get the image from google');
-    } else {
-      $display.find('.plot-image').attr("src", plot.image);
+      // collapse coords into a single array
+      var arr = plot.map_data.geometry.coordinates[0];
+      // get avarage to find approx. centre
+      var cen = arr.reduce(function (prev, curr) { return [ prev[0] + curr[0] / arr.length, prev[1] + curr[1] / arr.length ] }, [0,0] );
+
+      plot.image = "https://maps.googleapis.com/maps/api/staticmap?maptype=satellite&center="+cen[1]+","+cen[0]+"&zoom=17&size=150x150&key=AIzaSyBBY7yBxCXozlvzvEcEMkzuBar7EWK5h64";
     }
+    $display.find('.plot-image').attr("src", plot.image);
     $display.find('.plot-title').html(plot.title.rendered);
     $display.find('.plot-content').html(plot.content.rendered);
     var suggested_uses = JSON.parse(plot.suggested_uses);
