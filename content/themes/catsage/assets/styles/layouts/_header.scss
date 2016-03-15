@@ -7,9 +7,9 @@
     max-width: 50%;
     margin: 15px 0 10px;
     height: auto;
-    font-family: 'Fredericka the Great', Helvetica, Arial;
-    font-size: 4em;
-    color: #000;
+    font-family: $brandfont;
+    font-size: 4.2em;
+    
 }
 
 .navbar-default .brand{
@@ -17,7 +17,7 @@
     font-weight: 600;
     line-height: 1em;
 }
-.blogdesc{clear: left;font-weight: 600;}
+.sitedesc{font-size: 15px; margin-top: 0;}
 
 .menu {list-style: none;}
 
@@ -79,8 +79,8 @@
         // position: absolute;
         // top: 37px;
         width: 100%;
-        border-top: 3px solid black;
-        border-left:1px solid black;
+        border-top: 3px solid $mainpale;
+        border-left:2px solid $mainpale;
         font-size: 9px;
         padding-left: 3px;
 
@@ -92,11 +92,11 @@
     }
 
     &:first-child::after {
-        border-left: 2px solid black;
+     //border-left: 2px solid black;
      }
 
     &:last-child::after {
-    border-right: 2px solid black;
+    border-right: 2px solid $mainpale;
     }
 
  }

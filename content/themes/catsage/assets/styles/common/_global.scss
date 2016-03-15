@@ -1,0 +1,13 @@
+body{
+	background: rgb(29, 26, 26) none repeat scroll 0% 0%;
+	color: rgb(237, 231, 207);
+	@include font-helv;
+}
+
+a {
+	color:$turquoise;
+	&:hover {
+		text-decoration: none;
+	}
+
+}
