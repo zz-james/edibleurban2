@@ -45,11 +45,11 @@ function MapView($el, props) {
     CONFIG.logged_in ? this.enableDrawing() : null; // only add draw controls here if initialising with a logged in session
 
     // create button to control the slide out help panel
-    L.control.info = createInfoControl({
-        'text'      : 'info',
-        'iconUrl'   : 'https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png',
-        'maxWidth'  : '30px'
-    }).addTo(map);
+    // L.control.info = createInfoControl({
+    //     'text'      : 'info',
+    //     'iconUrl'   : 'https://api.mapbox.com/mapbox.js/v2.2.3/images/icons-000000@2x.png',
+    //     'maxWidth'  : '30px'
+    // }).addTo(map);
 
     bindEvents();
   }
@@ -241,62 +241,62 @@ function MapView($el, props) {
   }
 
 
-  /**
-   * factory method: create the info button class
-   * and return a new instance of it.
-   * refers to the IControl interface
-   * http://leafletjs.com/reference.html#icontrol
-   */
-  function createInfoControl(props) {
-      var control = L.Control.extend({
+  // /**
+  //  * factory method: create the info button class
+  //  * and return a new instance of it.
+  //  * refers to the IControl interface
+  //  * http://leafletjs.com/reference.html#icontrol
+  //  */
+  // function createInfoControl(props) {
+  //     var control = L.Control.extend({
 
-          options: {
-              position: 'bottomleft'
-          },
+  //         options: {
+  //             position: 'bottomleft'
+  //         },
 
-          initialise: function(options) {
-              L.Util.setOptions(this.options);
-          },
+  //         initialise: function(options) {
+  //             L.Util.setOptions(this.options);
+  //         },
 
-          onAdd: function(map) {
-              var container = L.DomUtil.create('div', 'leaflet-info-button');
+  //         onAdd: function(map) {
+  //             var container = L.DomUtil.create('div', 'leaflet-info-button');
 
-              this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
-              this.infoButton.width = this.maxWidth;
-              container.setAttribute('border', '1px solid red' );
+  //             this.infoButton = L.DomUtil.create('div', 'leaflet-buttons-info-button', container);
+  //             this.infoButton.width = this.maxWidth;
+  //             container.setAttribute('border', '1px solid red' );
 
-              L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
-              return container;
-          },
+  //             L.DomEvent.addListener(this.infoButton, 'click', this._clicked, this);
+  //             return container;
+  //         },
 
-          onRemove: function(map) {
-              L.DomEvent.removeListener(this.infoButton, 'click', this._clicked, this);
-          },
+  //         onRemove: function(map) {
+  //             L.DomEvent.removeListener(this.infoButton, 'click', this._clicked, this);
+  //         },
 
-          _clicked: function(e) {
-              if(store.getState().details.view) {
-                store.dispatch({
-                    type:'SIDEBAR_VIEW',
-                    view: ''
-                });
-                return;
-              }
-              if(CONFIG.logged_in) {
-                store.dispatch({
-                    type:'SIDEBAR_VIEW',
-                    view: 'start'
-                });
-              } else {
-                store.dispatch({
-                    type:'SIDEBAR_VIEW',
-                    view: 'help'
-                });
-              }
-              L.DomEvent.preventDefault(e)
-          }
-      });
-      return new control(props);
-  }
+  //         _clicked: function(e) {
+  //             if(store.getState().details.view) {
+  //               store.dispatch({
+  //                   type:'SIDEBAR_VIEW',
+  //                   view: ''
+  //               });
+  //               return;
+  //             }
+  //             if(CONFIG.logged_in) {
+  //               store.dispatch({
+  //                   type:'SIDEBAR_VIEW',
+  //                   view: 'start'
+  //               });
+  //             } else {
+  //               store.dispatch({
+  //                   type:'SIDEBAR_VIEW',
+  //                   view: 'help'
+  //               });
+  //             }
+  //             L.DomEvent.preventDefault(e)
+  //         }
+  //     });
+  //     return new control(props);
+  // }
 
   this.initialise();
 
